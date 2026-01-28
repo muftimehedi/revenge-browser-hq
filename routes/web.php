@@ -28,6 +28,7 @@ Route::get('/download', [DownloadController::class, 'index'])->name('download');
 
 // Public API
 Route::get('/api/stats', [DownloadController::class, 'stats']);
+Route::get('/api/apk-info', [DownloadController::class, 'apkInfo']);
 Route::get('/api/download', [DownloadController::class, 'download']);
 
 // ============================================

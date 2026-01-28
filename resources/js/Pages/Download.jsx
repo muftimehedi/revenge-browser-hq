@@ -1,7 +1,21 @@
 import { Head } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import PublicLayout from '../Layouts/PublicLayout';
 
 const Download = ({ downloadCount }) => {
+    const [apkInfo, setApkInfo] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch('/api/apk-info')
+            .then(res => res.json())
+            .then(data => {
+                setApkInfo(data);
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, []);
+
     const handleDownload = () => {
         window.location.href = '/api/download';
     };
@@ -31,15 +45,42 @@ const Download = ({ downloadCount }) => {
                         <span className="text-red-400 font-medium"> 100% Free, No Ads.</span>
                     </p>
 
+                    {/* APK Info Card */}
+                    {!loading && apkInfo && apkInfo.exists && (
+                        <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 p-6 mb-8">
+                            <div className="flex flex-wrap items-center justify-center gap-6 text-zinc-300">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="font-medium">{apkInfo.filename}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                                    </svg>
+                                    <span>{apkInfo.sizeHuman}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>Updated: {apkInfo.lastModifiedHuman}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Download Button */}
                     <button
                         onClick={handleDownload}
-                        className="pulse-glow inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-2xl rounded-2xl transition-all transform hover:scale-105 mb-8"
+                        disabled={loading || (apkInfo && !apkInfo.exists)}
+                        className="pulse-glow inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-2xl rounded-2xl transition-all transform hover:scale-105 mb-8 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        Download APK
+                        {loading ? 'Loading...' : apkInfo && !apkInfo.exists ? 'File Not Available' : 'Download APK'}
                     </button>
 
                     {/* Download Stats */}
