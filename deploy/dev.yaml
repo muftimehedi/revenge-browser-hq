@@ -1,0 +1,56 @@
+# Development Environment Configuration
+# Branch: dev-release → dev.revengebrowser.com
+
+env: dev
+project_id: your-gcp-project-id
+region: us-central1
+
+# Cloud Run Service
+cloud_run:
+  name: revenge-browser-dev
+  min_instances: 0
+  max_instances: 10
+  cpu: 1
+  memory: 512Mi
+  concurrency: 80
+  timeout: 300
+
+# Domain
+domain: dev.revengebrowser.com
+
+# Cloud SQL (PostgreSQL)
+cloud_sql:
+  instance_name: revenge-browser-dev-db
+  tier: db-f1-micro
+  database: revenge_browser_dev
+  version: POSTGRES_18
+
+# Memorystore (Redis)
+redis:
+  name: revenge-browser-dev-redis
+  tier: BASIC
+  memory_size_gb: 1
+  region: us-central1
+
+# Cloud Storage
+storage:
+  bucket: revenge-browser-dev-apk
+  location: us-central1
+
+# Environment Variables (Reference)
+env_vars:
+  APP_NAME: "Revenge Browser"
+  APP_ENV: production
+  APP_DEBUG: false
+  APP_URL: https://dev.revengebrowser.com
+
+  LOG_LEVEL: info
+  LOG_CHANNEL: stack
+
+  # Cache & Queue
+  CACHE_STORE: redis
+  SESSION_DRIVER: database
+  QUEUE_CONNECTION: database
+
+  # File Storage
+  FILESYSTEM_DISK: local
