@@ -6,6 +6,7 @@ const AdminLogin = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [focusedInput, setFocusedInput] = useState(null);
 
     // Check if already logged in
     useEffect(() => {
@@ -62,60 +63,85 @@ const AdminLogin = () => {
     return (
         <>
             <Head title="Admin Login" />
-            <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
-                <div className="w-full max-w-md">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-4 relative overflow-hidden">
+                {/* Animated background elements */}
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
+                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-red-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+                </div>
+
+                <div className="w-full max-w-md relative z-10">
                     {/* Logo */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 mb-4">
-                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 mb-6 shadow-2xl shadow-red-500/20">
+                            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                             </svg>
                         </div>
-                        <h1 className="text-2xl font-bold text-white">Revenge Browser</h1>
-                        <p className="text-zinc-500 mt-2">Sign in to manage Revenge Browser</p>
+                        <h1 className="text-3xl font-bold text-white mb-2">Revenge Browser</h1>
+                        <p className="text-zinc-400">Admin Portal</p>
                     </div>
 
                     {/* Login Form */}
-                    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8">
+                    <div className="bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-zinc-800/50 p-8 shadow-2xl">
                         {error && (
-                            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm flex items-start gap-3">
+                                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 {error}
                             </div>
                         )}
 
                         <form onSubmit={handleSubmit}>
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                            <div className="mb-5">
+                                <label className="block text-sm font-medium text-zinc-300 mb-2">
                                     Email Address
                                 </label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 transition-colors"
-                                    placeholder="admin@revenge.com"
-                                    required
-                                />
+                                <div className={`relative transition-all duration-300 ${focusedInput === 'email' ? 'scale-[1.02]' : ''}`}>
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <svg className={`w-5 h-5 transition-colors duration-300 ${focusedInput === 'email' ? 'text-red-500' : 'text-zinc-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                        </svg>
+                                    </div>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        onFocus={() => setFocusedInput('email')}
+                                        onBlur={() => setFocusedInput(null)}
+                                        className={`w-full pl-12 pr-4 py-3.5 bg-zinc-800/50 border rounded-xl text-white focus:outline-none transition-all duration-300 ${focusedInput === 'email' ? 'border-red-500 shadow-lg shadow-red-500/10' : 'border-zinc-700 hover:border-zinc-600'}`}
+                                        required
+                                    />
+                                </div>
                             </div>
 
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                            <div className="mb-8">
+                                <label className="block text-sm font-medium text-zinc-300 mb-2">
                                     Password
                                 </label>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 transition-colors"
-                                    placeholder="••••••••"
-                                    required
-                                />
+                                <div className={`relative transition-all duration-300 ${focusedInput === 'password' ? 'scale-[1.02]' : ''}`}>
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <svg className={`w-5 h-5 transition-colors duration-300 ${focusedInput === 'password' ? 'text-red-500' : 'text-zinc-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                    </div>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        onFocus={() => setFocusedInput('password')}
+                                        onBlur={() => setFocusedInput(null)}
+                                        className={`w-full pl-12 pr-4 py-3.5 bg-zinc-800/50 border rounded-xl text-white focus:outline-none transition-all duration-300 ${focusedInput === 'password' ? 'border-red-500 shadow-lg shadow-red-500/10' : 'border-zinc-700 hover:border-zinc-600'}`}
+                                        required
+                                    />
+                                </div>
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-4 bg-red-600 hover:bg-red-500 disabled:bg-red-800 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 disabled:from-zinc-700 disabled:to-zinc-600 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-red-500/25 hover:shadow-red-500/40 disabled:shadow-none transform hover:scale-[1.02] active:scale-[0.98]"
                             >
                                 {loading ? (
                                     <>
@@ -135,21 +161,12 @@ const AdminLogin = () => {
                                 )}
                             </button>
                         </form>
-
-                        {/* Demo credentials */}
-                        <div className="mt-6 p-4 bg-zinc-800/50 rounded-xl border border-zinc-700">
-                            <p className="text-zinc-500 text-xs mb-2">Demo Credentials:</p>
-                            <p className="text-zinc-400 text-sm font-mono">admin@revenge.com</p>
-                            <p className="text-zinc-400 text-sm font-mono">password123</p>
-                        </div>
                     </div>
 
-                    {/* Back to Home */}
-                    <div className="text-center mt-6">
-                        <a href="/" className="text-zinc-500 hover:text-white text-sm transition-colors">
-                            ← Back to Home
-                        </a>
-                    </div>
+                    {/* Footer text */}
+                    <p className="text-center text-zinc-600 text-sm mt-8">
+                        Secure Admin Access
+                    </p>
                 </div>
             </div>
         </>
