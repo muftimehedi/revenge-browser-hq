@@ -275,8 +275,8 @@ Add these at `https://github.com/YOUR_USERNAME/revenge-x-hq/settings/secrets/act
 | `DEV_DB_DATABASE` | `revenge_x_hq_dev` |
 | `DEV_DB_USERNAME` | `postgres` |
 | `DEV_DB_PASSWORD` | *(your database password)* |
-| `DEV_REDIS_HOST` | `127.0.0.1` |
-| `DEV_REDIS_PASSWORD` | *(empty or redis password)* |
+| `DEV_REDIS_HOST` | *(leave empty - Redis not required for Cloud Run)* |
+| `DEV_REDIS_PASSWORD` | *(leave empty)* |
 | `DEV_APP_KEY` | `base64:...` (generate with `php artisan key:generate`) |
 | `DEV_STORAGE_BUCKET` | `revenge-x-hq-dev-apk` |
 
@@ -289,8 +289,8 @@ Add these at `https://github.com/YOUR_USERNAME/revenge-x-hq/settings/secrets/act
 | `PROD_DB_DATABASE` | `revenge_x_hq_prod` |
 | `PROD_DB_USERNAME` | `postgres` |
 | `PROD_DB_PASSWORD` | *(your database password)* |
-| `PROD_REDIS_HOST` | `127.0.0.1` |
-| `PROD_REDIS_PASSWORD` | *(empty or redis password)* |
+| `PROD_REDIS_HOST` | *(leave empty - Redis not required for Cloud Run)* |
+| `PROD_REDIS_PASSWORD` | *(leave empty)* |
 | `PROD_APP_KEY` | `base64:...` (generate with `php artisan key:generate`) |
 | `PROD_STORAGE_BUCKET` | `revenge-x-hq-prod-apk` |
 

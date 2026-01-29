@@ -153,13 +153,13 @@ Value: RevengeXHQ_Dev_2026
 #### Secret 9: DEV_REDIS_HOST
 ```
 Name: DEV_REDIS_HOST
-Value: 127.0.0.1
+Value: [Leave empty - not required for Cloud Run]
 ```
 
 #### Secret 10: DEV_REDIS_PASSWORD
 ```
 Name: DEV_REDIS_PASSWORD
-Value: [Leave empty or enter redis password]
+Value: [Leave empty - not required for Cloud Run]
 ```
 
 #### Secret 11: DEV_APP_KEY
@@ -211,13 +211,13 @@ Value: RevengeXHQ_Prod_2026_Secure!
 #### Secret 18: PROD_REDIS_HOST
 ```
 Name: PROD_REDIS_HOST
-Value: 127.0.0.1
+Value: [Leave empty - not required for Cloud Run]
 ```
 
 #### Secret 19: PROD_REDIS_PASSWORD
 ```
 Name: PROD_REDIS_PASSWORD
-Value: [Leave empty or enter redis password]
+Value: [Leave empty - not required for Cloud Run]
 ```
 
 #### Secret 20: PROD_APP_KEY
@@ -307,8 +307,8 @@ DEV_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-dev-db
 DEV_DB_DATABASE = revenge_x_hq_dev
 DEV_DB_USERNAME = postgres
 DEV_DB_PASSWORD = RevengeXHQ_Dev_2026
-DEV_REDIS_HOST = 127.0.0.1
-DEV_REDIS_PASSWORD =
+DEV_REDIS_HOST = [leave empty - Redis not required]
+DEV_REDIS_PASSWORD = [leave empty]
 DEV_APP_KEY = base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
 DEV_STORAGE_BUCKET = revenge-x-hq-dev-apk
 
@@ -320,8 +320,8 @@ PROD_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-prod-db
 PROD_DB_DATABASE = revenge_x_hq_prod
 PROD_DB_USERNAME = postgres
 PROD_DB_PASSWORD = RevengeXHQ_Prod_2026_Secure!
-PROD_REDIS_HOST = 127.0.0.1
-PROD_REDIS_PASSWORD =
+PROD_REDIS_HOST = [leave empty - Redis not required]
+PROD_REDIS_PASSWORD = [leave empty]
 PROD_APP_KEY = base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
 PROD_STORAGE_BUCKET = revenge-x-hq-prod-apk
 ```

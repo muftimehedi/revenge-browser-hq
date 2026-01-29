@@ -88,8 +88,8 @@ Add these secrets to your GitHub repository (`Settings > Secrets and variables >
 | `DEV_DB_DATABASE` | `revenge_x_hq_dev` |
 | `DEV_DB_USERNAME` | Database username |
 | `DEV_DB_PASSWORD` | Database password |
-| `DEV_REDIS_HOST` | Redis instance IP |
-| `DEV_REDIS_PASSWORD` | Redis password |
+| `DEV_REDIS_HOST` | *(leave empty - Redis not required for Cloud Run)* |
+| `DEV_REDIS_PASSWORD` | *(leave empty)* |
 | `DEV_APP_KEY` | Laravel APP_KEY (base64) |
 | `DEV_STORAGE_BUCKET` | `revenge-x-hq-dev-apk` |
 
@@ -102,8 +102,8 @@ Add these secrets to your GitHub repository (`Settings > Secrets and variables >
 | `PROD_DB_DATABASE` | `revenge_x_hq_prod` |
 | `PROD_DB_USERNAME` | Database username |
 | `PROD_DB_PASSWORD` | Database password |
-| `PROD_REDIS_HOST` | Redis instance IP |
-| `PROD_REDIS_PASSWORD` | Redis password |
+| `PROD_REDIS_HOST` | *(leave empty - Redis not required for Cloud Run)* |
+| `PROD_REDIS_PASSWORD` | *(leave empty)* |
 | `PROD_APP_KEY` | Laravel APP_KEY (base64) |
 | `PROD_STORAGE_BUCKET` | `revenge-x-hq-prod-apk` |
 
