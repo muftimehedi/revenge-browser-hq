@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_ID: revenge-x-hq
+  PROJECT_ID: revenge-browser-hq
   REGION: us-central1
   GAR_LOCATION: us
   ENVIRONMENT: dev
