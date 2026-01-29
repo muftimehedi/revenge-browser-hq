@@ -33,7 +33,7 @@ gcloud services enable \
 
 ```bash
 # Set your project ID
-export PROJECT_ID="your-project-id"
+export PROJECT_ID="revenge-x-hq"
 gcloud config set project $PROJECT_ID
 
 # Create Artifact Registry
@@ -75,9 +75,9 @@ Add these secrets to your GitHub repository (`Settings > Secrets and variables >
 
 | Secret Name | Description | Example |
 |------------|-------------|---------|
-| `GCP_PROJECT_ID` | Google Cloud project ID | `my-project-123` |
+| `GCP_PROJECT_ID` | Google Cloud project ID | `revenge-x-hq` |
 | `GCP_SA_KEY` | Service account key (base64) | `ewogICJ0eXBlIjog...` |
-| `GCP_ARTIFACT_REPO` | Artifact repository name | `revenge-browser` |
+| `GCP_ARTIFACT_REPO` | Artifact repository name | `revenge-x-hq` |
 
 ### Dev Environment Secrets
 
@@ -134,6 +134,10 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member="serviceAccount:github-actions@$PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:github-actions@$PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/artifactregistry.writer"
 
 # Create and download key
 gcloud iam service-accounts keys create gcp-sa-key.json \
@@ -197,8 +201,27 @@ Add these records to your DNS:
 
 ### Automatic Deployment (CI/CD)
 
-1. Push to `dev-release` → Auto deploys to dev
-2. Push to `main` → Auto deploys to production (with canary)
+The project uses **separate workflow files** for each environment:
+
+**`.github/workflows/deploy-dev.yml`**
+- Triggers: Push to `dev-release` or merged PR into `dev-release`
+- Deploys to: `revenge-x-hq-dev` Cloud Run service
+- URL: `https://dev.revenge-x-hq.com`
+
+**`.github/workflows/deploy-production.yml`**
+- Triggers: Push to `main` or merged PR into `main`
+- Deploys to: `revenge-x-hq-prod` Cloud Run service
+- URL: `https://revenge-x-hq.com`
+
+### CI/CD Pipeline Steps
+
+Each deployment workflow includes:
+
+1. **Tests** - Run PHPUnit tests with PostgreSQL
+2. **Build** - Build Docker image with frontend assets
+3. **Push** - Push image to Google Artifact Registry
+4. **Deploy** - Deploy to Cloud Run
+5. **Health Check** - Verify deployment success
 
 ### Manual Deployment
 
@@ -209,6 +232,23 @@ Add these records to your DNS:
 # Deploy to production
 ./scripts/deploy-gcp.sh prod
 ```
+
+---
+
+## CI/CD Testing Configuration
+
+The GitHub Actions workflows include:
+
+### PostgreSQL Service Container
+- **Version**: PostgreSQL 18
+- **Database**: `revenge_test`
+- **User**: `revenge`
+- **Password**: `revenge`
+
+### Frontend Build
+- **Node.js**: 22
+- **Build Command**: `npm run build`
+- **Output**: Vite manifest for asset loading
 
 ---
 
@@ -328,20 +368,22 @@ gcloud run services list
 revenge-x-hq/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml          # CI/CD workflow
+│       ├── deploy-dev.yml         # Dev deployment workflow
+│       └── deploy-production.yml  # Production deployment workflow
 ├── deploy/
-│   ├── dev.yaml                # Dev environment config
-│   └── production.yaml         # Production config
+│   ├── dev.yaml                   # Dev environment config
+│   └── production.yaml            # Production config
 ├── docker/
-│   ├── nginx.conf              # Nginx config
-│   ├── php-fpm.conf            # PHP-FPM config
-│   └── php.ini                 # PHP config
+│   ├── nginx.conf                 # Nginx config
+│   ├── php-fpm.conf               # PHP-FPM config
+│   └── php.ini                    # PHP config
 ├── scripts/
-│   ├── deploy-gcp.sh           # Manual deployment script
-│   └── setup-gcp.sh            # Initial GCP setup script
-├── Dockerfile                  # Container image
-├── .gcloudignore               # Deployment exclusions
-└── routes/web.php              # With health check endpoint
+│   ├── deploy-gcp.sh              # Manual deployment script
+│   └── setup-gcp.sh               # Initial GCP setup script
+├── Dockerfile                     # Container image
+├── .gcloudignore                  # Deployment exclusions
+├── phpunit.xml                    # PHPUnit configuration
+└── routes/web.php                 # With health check endpoint
 ```
 
 ---
@@ -357,13 +399,36 @@ revenge-x-hq/
 
 ---
 
+## Development Workflow
+
+1. **Create Feature Branch**
+   ```bash
+   git checkout -b feature/new-feature
+   ```
+
+2. **Make Changes & Test Locally**
+   ```bash
+   ./vendor/bin/sail npm run build
+   ./vendor/bin/sail test
+   ```
+
+3. **Create PR to dev-release**
+   - Creates PR: `feature/new-feature` → `dev-release`
+   - On merge: Auto-deploys to `dev.revenge-x-hq.com`
+
+4. **Promote to Production**
+   - Creates PR: `dev-release` → `main`
+   - On merge: Auto-deploys to `revenge-x-hq.com`
+
+---
+
 ## Next Steps
 
 1. ✅ Create Google Cloud project
 2. ✅ Enable APIs
 3. ✅ Create resources (SQL, Storage, Artifact Registry)
 4. ✅ Create service account and add to GitHub Secrets
-5. ✅ Add all required secrets
+5. ✅ Add all required secrets (see GITHUB_SECRETS.md)
 6. ✅ Push to `dev-release` to test deployment
 7. ✅ Configure domain mappings
 8. ✅ Push to `main` for production deployment

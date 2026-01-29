@@ -1,6 +1,6 @@
-# Revenge Browser - Complete Documentation
+# Revenge X HQ - Complete Documentation
 
-## 📚 Table of Contents
+## Table of Contents
 
 1. [Project Overview](#-project-overview)
 2. [Tech Stack](#-tech-stack)
@@ -14,9 +14,9 @@
 
 ---
 
-## 🚀 Project Overview
+## Project Overview
 
-**Revenge Browser** is a privacy-focused, gaming-optimized Android browser with a "Play-to-Earn" (P2E) ecosystem. The project includes:
+**Revenge X HQ** is a privacy-focused, gaming-optimized Android browser with a "Play-to-Earn" (P2E) ecosystem. The project includes:
 
 - **Public Website**: Modern landing page for user acquisition
 - **Download System**: Secure, rate-limited APK downloads
@@ -27,12 +27,12 @@
 
 | Environment | Branch | Domain |
 |------------|--------|--------|
-| **Development** | `dev-release` | `dev.revengebrowser.com` |
-| **Production** | `main` | `revengebrowser.com` |
+| **Development** | `dev-release` | `dev.revenge-x-hq.com` |
+| **Production** | `main` | `revenge-x-hq.com` |
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 - **Framework**: Laravel 12 (PHP 8.4)
@@ -56,7 +56,7 @@
 
 ---
 
-## 💻 Local Development Setup
+## Local Development Setup
 
 ### Prerequisites
 
@@ -68,8 +68,8 @@
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/muftimehedi/revenge-browser-hq.git
-   cd revenge-browser-hq
+   git clone https://github.com/muftimehedi/revenge-x-hq.git
+   cd revenge-x-hq
    ```
 
 2. **Install Dependencies**
@@ -117,7 +117,7 @@
 
 ---
 
-## ☁️ Google Cloud Deployment
+## Google Cloud Deployment
 
 ### Quick Setup (Automated)
 
@@ -128,12 +128,12 @@ Run the automated setup script:
 ```
 
 This script will:
-- ✅ Create Google Cloud project
-- ✅ Enable required APIs
-- ✅ Create Cloud SQL databases (dev + production)
-- ✅ Create Cloud Storage buckets
-- ✅ Create service account with permissions
-- ✅ Generate GitHub secrets
+- Create Google Cloud project
+- Enable required APIs
+- Create Cloud SQL databases (dev + production)
+- Create Cloud Storage buckets
+- Create service account with permissions
+- Generate GitHub secrets
 
 ### Manual Setup
 
@@ -141,8 +141,8 @@ If you prefer manual setup:
 
 1. **Create Google Cloud Project**
    ```bash
-   gcloud projects create revenge-browser-hq
-   gcloud config set project revenge-browser-hq
+   gcloud projects create revenge-x-hq
+   gcloud config set project revenge-x-hq
    ```
 
 2. **Enable APIs**
@@ -160,23 +160,23 @@ If you prefer manual setup:
    **Cloud SQL (PostgreSQL)**
    ```bash
    # Dev Database
-   gcloud sql instances create revenge-browser-dev-db \
+   gcloud sql instances create revenge-x-hq-dev-db \
        --database-version=POSTGRES_18 \
-       --tier=db-perf-optimized-N-2 \
+       --tier=db-f1-micro \
        --region=us-central1
 
    # Production Database
-   gcloud sql instances create revenge-browser-prod-db \
+   gcloud sql instances create revenge-x-hq-prod-db \
        --database-version=POSTGRES_18 \
-       --tier=db-perf-optimized-N-4 \
+       --tier=db-custom-2-7680 \
        --region=us-central1 \
        --availability-type=REGIONAL
    ```
 
    **Cloud Storage**
    ```bash
-   gsutil mb -p revenge-browser-hq -l us-central1 gs://revenge-browser-dev-apk
-   gsutil mb -p revenge-browser-hq -l us-central1 gs://revenge-browser-prod-apk
+   gsutil mb -p revenge-x-hq -l us-central1 gs://revenge-x-hq-dev-apk
+   gsutil mb -p revenge-x-hq -l us-central1 gs://revenge-x-hq-prod-apk
    ```
 
 4. **Create Service Account**
@@ -185,17 +185,17 @@ If you prefer manual setup:
        --display-name="GitHub Actions Deployer"
 
    # Grant roles
-   gcloud projects add-iam-policy-binding revenge-browser-hq \
-       --member="serviceAccount:github-actions@revenge-browser-hq.iam.gserviceaccount.com" \
+   gcloud projects add-iam-policy-binding revenge-x-hq \
+       --member="serviceAccount:github-actions@revenge-x-hq.iam.gserviceaccount.com" \
        --role="roles/run.admin"
 
-   gcloud projects add-iam-policy-binding revenge-browser-hq \
-       --member="serviceAccount:github-actions@revenge-browser-hq.iam.gserviceaccount.com" \
+   gcloud projects add-iam-policy-binding revenge-x-hq \
+       --member="serviceAccount:github-actions@revenge-x-hq.iam.gserviceaccount.com" \
        --role="roles/cloudsql.client"
 
    # Create key
    gcloud iam service-accounts keys create gcp-sa-key.json \
-       --iam-account=github-actions@revenge-browser-hq.iam.gserviceaccount.com
+       --iam-account=github-actions@revenge-x-hq.iam.gserviceaccount.com
    ```
 
 5. **Configure Domain**
@@ -210,69 +210,89 @@ If you prefer manual setup:
    ```bash
    # Dev
    gcloud run domain-mappings create \
-       --domain=dev.revengebrowser.com \
-       --service=revenge-browser-dev \
+       --domain=dev.revenge-x-hq.com \
+       --service=revenge-x-hq-dev \
        --region=us-central1
 
    # Production
    gcloud run domain-mappings create \
-       --domain=revengebrowser.com \
-       --service=revenge-browser-prod \
+       --domain=revenge-x-hq.com \
+       --service=revenge-x-hq-prod \
        --region=us-central1
    ```
 
 ---
 
-## 🚀 CI/CD Pipeline
+## CI/CD Pipeline
 
-### GitHub Actions Workflow
+### GitHub Actions Workflows
 
-The project uses GitHub Actions for automated deployment:
+The project uses **separate workflow files** for each environment:
+
+**`.github/workflows/deploy-dev.yml`**
+- Triggers: Push to `dev-release` or merged PR into `dev-release`
+- Deploys to: `revenge-x-hq-dev` Cloud Run service
+- URL: `https://dev.revenge-x-hq.com`
+
+**`.github/workflows/deploy-production.yml`**
+- Triggers: Push to `main` or merged PR into `main`
+- Deploys to: `revenge-x-hq-prod` Cloud Run service
+- URL: `https://revenge-x-hq.com`
 
 ```
-Push to dev-release → Tests → Build → Deploy to dev.revengebrowser.com
-Push to main       → Tests → Build → Deploy to revengebrowser.com (canary)
+Push to dev-release → Tests → Build → Deploy to dev.revenge-x-hq.com
+Push to main       → Tests → Build → Deploy to revenge-x-hq.com
 ```
+
+### CI/CD Pipeline Steps
+
+Each deployment workflow includes:
+
+1. **Tests** - Run PHPUnit tests with PostgreSQL service container
+2. **Build** - Build Docker image with frontend assets
+3. **Push** - Push image to Google Artifact Registry
+4. **Deploy** - Deploy to Cloud Run
+5. **Health Check** - Verify deployment success
 
 ### Required GitHub Secrets
 
-Add these at `https://github.com/YOUR_USERNAME/revenge-browser-hq/settings/secrets/actions`:
+Add these at `https://github.com/YOUR_USERNAME/revenge-x-hq/settings/secrets/actions`:
 
 #### Core Secrets
 
 | Secret Name | Value |
 |------------|-------|
-| `GCP_PROJECT_ID` | `revenge-browser-hq` |
+| `GCP_PROJECT_ID` | `revenge-x-hq` |
 | `GCP_SA_KEY` | Base64 encoded service account key |
-| `GCP_ARTIFACT_REPO` | `revenge-browser` |
+| `GCP_ARTIFACT_REPO` | `revenge-x-hq` |
 
 #### Dev Environment Secrets
 
 | Secret Name | Value |
 |------------|-------|
-| `DEV_APP_URL` | `https://dev.revengebrowser.com` |
-| `DEV_DB_HOST` | `revenge-browser-hq:us-central1:revenge-browser-dev-db` |
-| `DEV_DB_DATABASE` | `revenge_browser_dev` |
+| `DEV_APP_URL` | `https://dev.revenge-x-hq.com` |
+| `DEV_DB_HOST` | `revenge-x-hq:us-central1:revenge-x-hq-dev-db` |
+| `DEV_DB_DATABASE` | `revenge_x_hq_dev` |
 | `DEV_DB_USERNAME` | `postgres` |
 | `DEV_DB_PASSWORD` | *(your database password)* |
 | `DEV_REDIS_HOST` | `127.0.0.1` |
 | `DEV_REDIS_PASSWORD` | *(empty or redis password)* |
 | `DEV_APP_KEY` | `base64:...` (generate with `php artisan key:generate`) |
-| `DEV_STORAGE_BUCKET` | `revenge-browser-dev-apk` |
+| `DEV_STORAGE_BUCKET` | `revenge-x-hq-dev-apk` |
 
 #### Production Secrets
 
 | Secret Name | Value |
 |------------|-------|
-| `PROD_APP_URL` | `https://revengebrowser.com` |
-| `PROD_DB_HOST` | `revenge-browser-hq:us-central1:revenge-browser-prod-db` |
-| `PROD_DB_DATABASE` | `revenge_browser_prod` |
+| `PROD_APP_URL` | `https://revenge-x-hq.com` |
+| `PROD_DB_HOST` | `revenge-x-hq:us-central1:revenge-x-hq-prod-db` |
+| `PROD_DB_DATABASE` | `revenge_x_hq_prod` |
 | `PROD_DB_USERNAME` | `postgres` |
 | `PROD_DB_PASSWORD` | *(your database password)* |
 | `PROD_REDIS_HOST` | `127.0.0.1` |
 | `PROD_REDIS_PASSWORD` | *(empty or redis password)* |
 | `PROD_APP_KEY` | `base64:...` (generate with `php artisan key:generate`) |
-| `PROD_STORAGE_BUCKET` | `revenge-browser-prod-apk` |
+| `PROD_STORAGE_BUCKET` | `revenge-x-hq-prod-apk` |
 
 ### Deployment Workflow
 
@@ -281,7 +301,7 @@ Add these at `https://github.com/YOUR_USERNAME/revenge-browser-hq/settings/secre
    git checkout dev-release
    git push origin dev-release
    ```
-   → Auto-deploys to `dev.revengebrowser.com`
+   → Auto-deploys to `dev.revenge-x-hq.com`
 
 2. **Push to `main`**
    ```bash
@@ -289,7 +309,7 @@ Add these at `https://github.com/YOUR_USERNAME/revenge-browser-hq/settings/secre
    git merge dev-release
    git push origin main
    ```
-   → Auto-deploys to `revengebrowser.com` (with 10% canary)
+   → Auto-deploys to `revenge-x-hq.com`
 
 ### Manual Deployment
 
@@ -307,10 +327,10 @@ After deployment, verify:
 
 ```bash
 # Dev
-curl https://dev.revengebrowser.com/api/health
+curl https://dev.revenge-x-hq.com/api/health
 
 # Production
-curl https://revengebrowser.com/api/health
+curl https://revenge-x-hq.com/api/health
 ```
 
 Expected response:
@@ -324,7 +344,7 @@ Expected response:
 
 ---
 
-## 📡 API Documentation
+## API Documentation
 
 ### Public Endpoints
 
@@ -355,7 +375,7 @@ Requires `Bearer <token>` via Laravel Sanctum.
 
 ---
 
-## 🎮 Admin Panel
+## Admin Panel
 
 ### Features
 
@@ -393,7 +413,7 @@ Requires `Bearer <token>` via Laravel Sanctum.
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Local Development Issues
 
@@ -449,7 +469,7 @@ gcloud sql instances list
 **Health check fails**
 ```bash
 # Check service logs
-gcloud run services logs tail revenge-browser-prod --region=us-central1
+gcloud run services logs tail revenge-x-hq-prod --region=us-central1
 
 # Verify service is running
 gcloud run services list
@@ -463,10 +483,11 @@ gcloud run services list
 | `SQL connection refused` | Check Cloud SQL instance is running and VPC connector configured |
 | `Asset 404 errors` | Run `npm run build` before deployment |
 | `Permission denied` | Check service account has correct IAM roles |
+| `Vite manifest not found` | Frontend assets need to be built with `npm run build` |
 
 ---
 
-## 📝 Command Reference
+## Command Reference
 
 ### Docker / Sail Commands
 
@@ -553,10 +574,10 @@ gcloud sql connect <instance-name> --user=postgres
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-revenge-browser-hq/
+revenge-x-hq/
 ├── app/
 │   ├── Http/Controllers/
 │   │   ├── Admin/
@@ -595,19 +616,22 @@ revenge-browser-hq/
 │   └── app/apk/                 # APK storage directory
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml           # CI/CD workflow
+│       ├── deploy-dev.yml       # Dev CI/CD workflow
+│       └── deploy-production.yml # Production CI/CD workflow
 ├── .gcloudignore
 ├── .env.example
 ├── .gitignore
 ├── compose.yaml                 # Docker Compose config
 ├── Dockerfile                   # Cloud Run container
 ├── DEPLOYMENT.md                # Deployment guide
-└── DOCUMENTATION.md             # This file
+├── GITHUB_SECRETS.md            # GitHub Secrets setup
+├── DOCUMENTATION.md             # This file
+└── phpunit.xml                  # PHPUnit configuration
 ```
 
 ---
 
-## 🔐 Security Notes
+## Security Notes
 
 1. **APK Uploads**
    - Maximum size: 200MB
@@ -631,13 +655,13 @@ revenge-browser-hq/
 
 ---
 
-## 📊 Monitoring & Logging
+## Monitoring & Logging
 
 ### Cloud Run Logs
 
 ```bash
 # Tail logs
-gcloud run services logs tail revenge-browser-prod --region=us-central1
+gcloud run services logs tail revenge-x-hq-prod --region=us-central1
 
 # View specific logs
 gcloud logging read "resource.type=cloud_run_revision" --limit=50
@@ -647,15 +671,15 @@ gcloud logging read "resource.type=cloud_run_revision" --limit=50
 
 ```bash
 # SQL instance info
-gcloud sql instances describe revenge-browser-prod-db
+gcloud sql instances describe revenge-x-hq-prod-db
 
 # Backup status
-gcloud sql backups list --instance=revenge-browser-prod-db
+gcloud sql backups list --instance=revenge-x-hq-prod-db
 ```
 
 ---
 
-## 🔄 Development Workflow
+## Development Workflow
 
 1. **Feature Development**
    ```bash
@@ -671,7 +695,7 @@ gcloud sql backups list --instance=revenge-browser-prod-db
    git checkout dev-release
    git merge feature/your-feature
    git push origin dev-release
-   # Test at dev.revengebrowser.com
+   # Test at dev.revenge-x-hq.com
    ```
 
 3. **Deploy to Production**
@@ -679,22 +703,17 @@ gcloud sql backups list --instance=revenge-browser-prod-db
    git checkout main
    git merge dev-release
    git push origin main
-   # Deployed to revengebrowser.com
+   # Deployed to revenge-x-hq.com
    ```
 
 ---
 
-## 📞 Support
+## Support
 
 For issues or questions:
-- GitHub Issues: https://github.com/muftimehedi/revenge-browser-hq/issues
+- GitHub Issues: https://github.com/muftimehedi/revenge-x-hq/issues
 - Documentation: See `DEPLOYMENT.md` for detailed deployment guide
-
----
-
-## 📄 License
-
-[Your License Here]
+- GitHub Secrets: See `GITHUB_SECRETS.md` for secrets setup
 
 ---
 
