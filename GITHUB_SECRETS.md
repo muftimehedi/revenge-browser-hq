@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-This guide explains how to add all required GitHub Secrets for the CI/CD pipeline to deploy your Revenge Browser project to Google Cloud.
+This guide explains how to add all required GitHub Secrets for the CI/CD pipeline to deploy your Revenge X HQ project to Google Cloud.
 
 **Total Secrets Required: 21**
 
@@ -14,7 +14,7 @@ This guide explains how to add all required GitHub Secrets for the CI/CD pipelin
 
 Click this link or copy/paste into your browser:
 ```
-https://github.com/muftimehedi/revenge-browser-hq/settings/secrets/actions
+https://github.com/muftimehedi/revenge-x-hq/settings/secrets/actions
 ```
 
 ### 2. You'll See This Page
@@ -38,13 +38,13 @@ For each secret below:
 ### 1. GCP_PROJECT_ID
 ```
 Name: GCP_PROJECT_ID
-Value: revenge-browser-hq
+Value: revenge-x-hq
 ```
 
 ### 2. GCP_ARTIFACT_REPO
 ```
 Name: GCP_ARTIFACT_REPO
-Value: revenge-browser
+Value: revenge-x-hq
 ```
 
 ### 3. GCP_SA_KEY
@@ -66,13 +66,13 @@ Value: https://dev.revengebrowser.com
 ### 5. DEV_DB_HOST
 ```
 Name: DEV_DB_HOST
-Value: revenge-browser-hq:us-central1:revenge-browser-dev-db
+Value: revenge-x-hq:us-central1:revenge-x-hq-dev-db
 ```
 
 ### 6. DEV_DB_DATABASE
 ```
 Name: DEV_DB_DATABASE
-Value: revenge_browser_dev
+Value: revenge_x_hq_dev
 ```
 
 ### 7. DEV_DB_USERNAME
@@ -108,7 +108,7 @@ Value: base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
 ### 12. DEV_STORAGE_BUCKET
 ```
 Name: DEV_STORAGE_BUCKET
-Value: revenge-browser-dev-apk
+Value: revenge-x-hq-dev-apk
 ```
 
 ---
@@ -124,13 +124,13 @@ Value: https://revengebrowser.com
 ### 14. PROD_DB_HOST
 ```
 Name: PROD_DB_HOST
-Value: revenge-browser-hq:us-central1:revenge-browser-prod-db
+Value: revenge-x-hq:us-central1:revenge-x-hq-prod-db
 ```
 
 ### 15. PROD_DB_DATABASE
 ```
 Name: PROD_DB_DATABASE
-Value: revenge_browser_prod
+Value: revenge_x_hq_prod
 ```
 
 ### 16. PROD_DB_USERNAME
@@ -166,7 +166,7 @@ Value: base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
 ### 21. PROD_STORAGE_BUCKET
 ```
 Name: PROD_STORAGE_BUCKET
-Value: revenge-browser-prod-apk
+Value: revenge-x-hq-prod-apk
 ```
 
 ---
@@ -175,7 +175,7 @@ Value: revenge-browser-prod-apk
 
 After adding all secrets, verify they appear in your secrets list:
 
-**Go to:** https://github.com/muftimehedi/revenge-browser-hq/settings/secrets/actions
+**Go to:** https://github.com/muftimehedi/revenge-x-hq/settings/secrets/actions
 
 You should see all 21 secrets listed:
 - GCP_PROJECT_ID
@@ -215,7 +215,7 @@ Once all secrets are added, GitHub Actions will automatically:
 
 Watch your deployment here:
 ```
-https://github.com/muftimehedi/revenge-browser-hq/actions
+https://github.com/muftimehedi/revenge-x-hq/actions
 ```
 
 ---
@@ -224,31 +224,31 @@ https://github.com/muftimehedi/revenge-browser-hq/actions
 
 ```
 CORE:
-GCP_PROJECT_ID = revenge-browser-hq
-GCP_ARTIFACT_REPO = revenge-browser
+GCP_PROJECT_ID = revenge-x-hq
+GCP_ARTIFACT_REPO = revenge-x-hq
 GCP_SA_KEY = (see above - long base64 string)
 
 DEV:
 DEV_APP_URL = https://dev.revengebrowser.com
-DEV_DB_HOST = revenge-browser-hq:us-central1:revenge-browser-dev-db
-DEV_DB_DATABASE = revenge_browser_dev
+DEV_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-dev-db
+DEV_DB_DATABASE = revenge_x_hq_dev
 DEV_DB_USERNAME = postgres
 DEV_DB_PASSWORD = hpfArgUglX2K3lNkSGTQOTY5VJhj3lE8
 DEV_REDIS_HOST = 127.0.0.1
 DEV_REDIS_PASSWORD = (empty)
 DEV_APP_KEY = base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
-DEV_STORAGE_BUCKET = revenge-browser-dev-apk
+DEV_STORAGE_BUCKET = revenge-x-hq-dev-apk
 
 PRODUCTION:
 PROD_APP_URL = https://revengebrowser.com
-PROD_DB_HOST = revenge-browser-hq:us-central1:revenge-browser-prod-db
-PROD_DB_DATABASE = revenge_browser_prod
+PROD_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-prod-db
+PROD_DB_DATABASE = revenge_x_hq_prod
 PROD_DB_USERNAME = postgres
 PROD_DB_PASSWORD = Maubd3+fyICFZrS04o3Bi55zyP7kDqdi
 PROD_REDIS_HOST = 127.0.0.1
 PROD_REDIS_PASSWORD = (empty)
 PROD_APP_KEY = base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
-PROD_STORAGE_BUCKET = revenge-browser-prod-apk
+PROD_STORAGE_BUCKET = revenge-x-hq-prod-apk
 ```
 
 ---
@@ -276,7 +276,7 @@ PROD_STORAGE_BUCKET = revenge-browser-prod-apk
 
 If you need help:
 - Check the main documentation: `DOCUMENTATION.md`
-- GitHub Issues: https://github.com/muftimehedi/revenge-browser-hq/issues
+- GitHub Issues: https://github.com/muftimehedi/revenge-x-hq/issues
 
 ---
 
