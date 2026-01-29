@@ -34,13 +34,15 @@ RUN apk add --no-cache \
     zip \
     unzip \
     git \
-    icu-dev \
+    postgresql-dev \
+    libzip-dev \
     oniguruma-dev \
-    libzip-dev
+    icu-dev
 
 # Install PHP extensions
-RUN docker-php-ext-configure zip \
-    && docker-php-ext-install pdo_pgsql zip mbstring opcache
+RUN docker-php-ext-configure zip --with-libzip \
+    && docker-php-ext-install pdo_pgsql zip mbstring \
+    && docker-php-ext-enable opcache
 
 # Install Redis extension
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
