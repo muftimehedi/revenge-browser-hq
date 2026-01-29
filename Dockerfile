@@ -40,7 +40,7 @@ RUN apk add --no-cache \
 
 # Install PHP extensions
 RUN docker-php-ext-configure zip \
-    && docker-php-ext-install pdo_pgsql zip mbstring opcache pdo
+    && docker-php-ext-install pdo_pgsql zip mbstring opcache
 
 # Install Redis extension
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
