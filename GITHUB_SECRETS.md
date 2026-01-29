@@ -129,7 +129,7 @@ Value: https://dev.revenge-x-hq.com
 #### Secret 5: DEV_DB_HOST
 ```
 Name: DEV_DB_HOST
-Value: revenge-browser-hq:us-central1:revenge-browser-hq-dev-db
+Value: revenge-x-hq:us-central1:revenge-x-hq-dev-db
 ```
 
 #### Secret 6: DEV_DB_DATABASE
@@ -191,7 +191,7 @@ Value: https://revenge-x-hq.com
 #### Secret 14: PROD_DB_HOST
 ```
 Name: PROD_DB_HOST
-Value: revenge-browser-hq:us-central1:revenge-browser-hq-prod-db
+Value: revenge-x-hq:us-central1:revenge-x-hq-prod-db
 ```
 
 #### Secret 15: PROD_DB_DATABASE
