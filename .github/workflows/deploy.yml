@@ -71,7 +71,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REPO }}/revenge-browser
+          images: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REPO }}/revenge-x-hq
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
@@ -111,7 +111,7 @@ jobs:
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: revenge-browser-dev
+          service: revenge-x-hq-dev
           region: ${{ env.REGION }}
           image: ${{ needs.build-and-push.outputs.image }}
           flags: |
@@ -154,7 +154,7 @@ jobs:
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: revenge-browser-prod
+          service: revenge-x-hq-prod
           region: ${{ env.REGION }}
           image: ${{ needs.build-and-push.outputs.image }}
           flags: |
