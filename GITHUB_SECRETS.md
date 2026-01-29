@@ -147,7 +147,7 @@ Value: postgres
 #### Secret 8: DEV_DB_PASSWORD
 ```
 Name: DEV_DB_PASSWORD
-Value: [Your chosen password for dev database]
+Value: RevengeXHQ_Dev_2026
 ```
 
 #### Secret 9: DEV_REDIS_HOST
@@ -163,13 +163,9 @@ Value: [Leave empty or enter redis password]
 ```
 
 #### Secret 11: DEV_APP_KEY
-Generate this key:
-```bash
-php artisan key:generate --show
-```
 ```
 Name: DEV_APP_KEY
-Value: [Paste the generated key - starts with base64:]
+Value: base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
 ```
 
 #### Secret 12: DEV_STORAGE_BUCKET
@@ -209,7 +205,7 @@ Value: postgres
 #### Secret 17: PROD_DB_PASSWORD
 ```
 Name: PROD_DB_PASSWORD
-Value: [Your chosen password for production database - use strong password!]
+Value: RevengeXHQ_Prod_2026_Secure!
 ```
 
 #### Secret 18: PROD_REDIS_HOST
@@ -227,7 +223,7 @@ Value: [Leave empty or enter redis password]
 #### Secret 20: PROD_APP_KEY
 ```
 Name: PROD_APP_KEY
-Value: [Same as DEV_APP_KEY or generate new one]
+Value: base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
 ```
 
 #### Secret 21: PROD_STORAGE_BUCKET
@@ -301,7 +297,7 @@ CORE SECRETS (Required First)
 =====================================
 GCP_PROJECT_ID = revenge-x-hq
 GCP_ARTIFACT_REPO = revenge-x-hq
-GCP_SA_KEY = [Base64 encoded service account key]
+GCP_SA_KEY = [Base64 encoded service account key - provided separately]
 
 =====================================
 DEV ENVIRONMENT
@@ -310,10 +306,10 @@ DEV_APP_URL = https://dev.revenge-x-hq.com
 DEV_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-dev-db
 DEV_DB_DATABASE = revenge_x_hq_dev
 DEV_DB_USERNAME = postgres
-DEV_DB_PASSWORD = [your password]
+DEV_DB_PASSWORD = RevengeXHQ_Dev_2026
 DEV_REDIS_HOST = 127.0.0.1
-DEV_REDIS_PASSWORD = [empty or password]
-DEV_APP_KEY = [from php artisan key:generate]
+DEV_REDIS_PASSWORD =
+DEV_APP_KEY = base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
 DEV_STORAGE_BUCKET = revenge-x-hq-dev-apk
 
 =====================================
@@ -323,10 +319,10 @@ PROD_APP_URL = https://revenge-x-hq.com
 PROD_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-prod-db
 PROD_DB_DATABASE = revenge_x_hq_prod
 PROD_DB_USERNAME = postgres
-PROD_DB_PASSWORD = [your strong password]
+PROD_DB_PASSWORD = RevengeXHQ_Prod_2026_Secure!
 PROD_REDIS_HOST = 127.0.0.1
-PROD_REDIS_PASSWORD = [empty or password]
-PROD_APP_KEY = [same as dev or generate new]
+PROD_REDIS_PASSWORD =
+PROD_APP_KEY = base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
 PROD_STORAGE_BUCKET = revenge-x-hq-prod-apk
 ```
 

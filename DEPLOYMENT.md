@@ -46,13 +46,13 @@ gcloud artifacts repositories create revenge-x-hq \
 # Dev
 gcloud sql instances create revenge-x-hq-dev-db \
   --database-version=POSTGRES_18 \
-  --tier=db-f1-micro \
+  --tier=db-perf-optimized-N-2 \
   --region=us-central1
 
 # Production
 gcloud sql instances create revenge-x-hq-prod-db \
   --database-version=POSTGRES_18 \
-  --tier=db-custom-2-7680 \
+  --tier=db-perf-optimized-N-4 \
   --region=us-central1 \
   --availability-type=REGIONAL
 
