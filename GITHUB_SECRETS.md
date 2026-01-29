@@ -42,7 +42,7 @@ https://github.com/muftimehedi/revenge-x-hq/settings/secrets/actions
 
 1. **Go to Service Accounts Page**
    ```
-   https://console.cloud.google.com/iam-admin/serviceaccounts?project=revenge-x-hq
+   https://console.cloud.google.com/iam-admin/serviceaccounts?project=revenge-browser-hq
    ```
 
 2. **Create Service Account**
