@@ -1,47 +1,80 @@
-# Revenge Browser Project Documentation
+# Revenge Browser - Complete Documentation
 
-## 🚀 Project Overview
+## 📚 Table of Contents
 
-**Revenge Browser** is a privacy-focused, gaming-optimized Android browser with a "Play-to-Earn" (P2E) ecosystem. This project consists of a modern landing page for user acquisition and a robust Admin Panel for managing the P2E economy, users, and APK releases.
-
-# Revenge Browser HQ
-
-### Tech Stack
-
-- **Framework**: Laravel 12 (PHP 8.4)
-- **Frontend**: Inertia.js + React
-- **Styling**: Tailwind CSS + Custom CSS Variables
-- **Database**: PostgreSQL 18
-- **Cache/Queue**: Redis
-- **Email Testing**: Mailpit
-- **Authentication**: Laravel Sanctum (API Token Auth)
-- **Development Environment**: Docker + Laravel Sail
+1. [Project Overview](#-project-overview)
+2. [Tech Stack](#-tech-stack)
+3. [Local Development Setup](#-local-development-setup)
+4. [Google Cloud Deployment](#-google-cloud-deployment)
+5. [CI/CD Pipeline](#-cicd-pipeline)
+6. [API Documentation](#-api-documentation)
+7. [Admin Panel](#-admin-panel)
+8. [Troubleshooting](#-troubleshooting)
+9. [Command Reference](#-command-reference)
 
 ---
 
-## 🛠️ Installation & Setup (Using Laravel Sail 🐳)
+## 🚀 Project Overview
 
-This project relies on **Laravel Sail** for a consistent Docker-based development environment.
+**Revenge Browser** is a privacy-focused, gaming-optimized Android browser with a "Play-to-Earn" (P2E) ecosystem. The project includes:
+
+- **Public Website**: Modern landing page for user acquisition
+- **Download System**: Secure, rate-limited APK downloads
+- **Admin Panel**: P2E economy management, user management, APK releases
+- **CI/CD Pipeline**: Automated deployment to Google Cloud
+
+### Domains
+
+| Environment | Branch | Domain |
+|------------|--------|--------|
+| **Development** | `dev-release` | `dev.revengebrowser.com` |
+| **Production** | `main` | `revengebrowser.com` |
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Framework**: Laravel 12 (PHP 8.4)
+- **Database**: PostgreSQL 18
+- **Cache/Queue**: Redis
+- **Authentication**: Laravel Sanctum
+- **Email Testing**: Mailpit
+
+### Frontend
+- **Framework**: React 19
+- **Integration**: Inertia.js
+- **Styling**: Tailwind CSS v4 + Custom CSS
+- **Build Tool**: Vite
+
+### Infrastructure
+- **Development**: Docker + Laravel Sail
+- **Production**: Google Cloud Run
+- **Database**: Google Cloud SQL
+- **Storage**: Google Cloud Storage
+- **CI/CD**: GitHub Actions
+
+---
+
+## 💻 Local Development Setup
 
 ### Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running
-- **Git**
+- Git
+- Text Editor/IDE
 
-### Step-by-Step Installation
+### Installation Steps
 
 1. **Clone the Repository**
-
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/muftimehedi/revenge-browser-hq.git
    cd revenge-browser-hq
    ```
 
 2. **Install Dependencies**
-
-   If you don't have PHP/Composer installed locally, use a Docker container:
-
    ```bash
+   # Using Docker (no local PHP needed)
    docker run --rm \
        -u "$(id -u):$(id -g)" \
        -v "$(pwd):/var/www/html" \
@@ -50,251 +83,244 @@ This project relies on **Laravel Sail** for a consistent Docker-based developmen
        composer install --ignore-platform-reqs
    ```
 
-   Or if you have PHP & Composer locally:
-
-   ```bash
-   composer install
-   ```
-
 3. **Environment Setup**
-
    ```bash
    cp .env.example .env
    ```
 
-   The `.env.example` is already configured for Sail:
-   ```ini
-   DB_CONNECTION=pgsql
-   DB_HOST=pgsql
-   DB_PORT=5432
-   REDIS_HOST=redis
-   MAIL_HOST=mailpit
-   ```
-
-4. **Start Sail & Build Containers**
-
+4. **Start Sail**
    ```bash
-   ./vendor/bin/sail up -d --build
+   ./vendor/bin/sail up -d
    ```
 
 5. **Generate APP_KEY & Run Migrations**
-
    ```bash
    ./vendor/bin/sail artisan key:generate
    ./vendor/bin/sail artisan migrate --force
-   ./vendor/bin/sail artisan storage:link
    ```
 
 6. **Install & Build Frontend**
-
    ```bash
    ./vendor/bin/sail npm install
    ./vendor/bin/sail npm run build
    ```
 
-   **Access the Site:** [http://localhost](http://localhost)
+7. **Access the Site**
+   - **Application**: http://localhost
+   - **Admin Login**: http://localhost/admin/login
 
----
+### Admin Credentials
 
-## 🐳 Docker & Sail Commands Reference
-
-### Sail Commands (Recommended)
-
-```bash
-# Start all containers in detached mode
-./vendor/bin/sail up -d
-
-# Start with build (rebuild images)
-./vendor/bin/sail up -d --build
-
-# Stop all containers
-./vendor/bin/sail down
-
-# Stop and remove volumes (reset database)
-./vendor/bin/sail down -v
-
-# View container logs
-./vendor/bin/sail logs
-
-# Follow logs (real-time)
-./vendor/bin/sail logs -f
-
-# View logs for specific service
-./vendor/bin/sail logs -f laravel.test
-./vendor/bin/sail logs -f pgsql
-
-# Restart containers
-./vendor/bin/sail restart
-
-# Execute artisan commands
-./vendor/bin/sail artisan <command>
-
-# Execute composer commands
-./vendor/bin/sail composer <command>
-
-# Execute npm commands
-./vendor/bin/sail npm <command>
-
-# Open shell in container
-./vendor/bin/sail shell
-
-# Run one-off commands
-./vendor/bin/sail php --version
-./vendor/bin/sail python --version
-```
-
-### Docker Compose Commands (Alternative)
-
-```bash
-# Start containers
-docker compose up -d
-
-# Stop containers
-docker compose down
-
-# View running containers
-docker compose ps
-
-# View logs
-docker compose logs -f
-
-# Execute command in container
-docker compose exec laravel.test <command>
-
-# Rebuild containers
-docker compose up -d --build
-
-# Run artisan
-docker compose exec laravel.test php artisan <command>
-
-# Run npm
-docker compose exec laravel.test npm <command>
-
-# Open shell
-docker compose exec laravel.test bash
-```
-
-### Container Status & Info
-
-```bash
-# List all running containers
-docker compose ps
-
-# View container resource usage
-docker compose stats
-
-# Inspect container details
-docker inspect <container-id>
-```
-
----
-
-## 🔧 Troubleshooting
-
-### Docker Credential Helper Error
-
-If you encounter `docker-credential-desktop: executable file not found`:
-
-```bash
-# Fix Docker credential configuration
-cat > ~/.docker/config.json << 'EOF'
-{
-    "auths": {}
-}
-EOF
-```
-
-Then restart Docker Desktop and retry.
-
-### NPM Platform-Specific Dependencies
-
-If you get Rollup/ARM64 errors after moving between platforms:
-
-```bash
-# Rebuild node_modules inside container
-docker compose exec laravel.test sh -c "rm -rf node_modules package-lock.json && npm install && npm run build"
-```
-
-### Port Conflicts
-
-If port 80 is already in use, change `APP_PORT` in `.env`:
-
-```ini
-APP_PORT=8080
-```
-
-Then restart: `./vendor/bin/sail down && ./vendor/bin/sail up -d`
-
-### Database Connection Issues
-
-```bash
-# Restart PostgreSQL container
-docker compose restart pgsql
-
-# Check PostgreSQL logs
-./vendor/bin/sail logs -f pgsql
-
-# Fresh migration (WARNING: deletes data)
-./vendor/bin/sail artisan migrate:fresh
-```
-
-### Clear All Caches
-
-```bash
-# Clear application cache
-./vendor/bin/sail artisan cache:clear
-
-# Clear config cache
-./vendor/bin/sail artisan config:clear
-
-# Clear route cache
-./vendor/bin/sail artisan route:clear
-
-# Clear view cache
-./vendor/bin/sail artisan view:clear
-
-# Clear all caches at once
-./vendor/bin/sail artisan optimize:clear
-```
-
----
-
-## 🔑 Admin Credentials & Access
-
-**Login URL**: [http://localhost/admin/login](http://localhost/admin/login)
-
-| Role            | Email               | Password      |
-| --------------- | ------------------- | ------------- |
+| Role | Email | Password |
+|------|-------|----------|
 | **Super Admin** | `admin@revenge.com` | `password123` |
 
 ---
 
-## 🎮 Features Module
+## ☁️ Google Cloud Deployment
 
-### 1. Public Website
+### Quick Setup (Automated)
 
-- **Home Page**: Premium "Cyberpunk" design with floating 3D animations and glassmorphism cards.
-- **Download System**: Secure, rate-limited download endpoint that tracks stats.
-- **Live Stats**: Displays real-time download counts without page refreshes.
+Run the automated setup script:
 
-### 2. Admin Panel
+```bash
+./scripts/setup-gcp.sh
+```
 
-- **Dashboard**:
-    - Overview of **Total Users**, **Website Downloads**, **Total Earned**, and **Pending Withdrawals**.
-    - APK Management (Upload/Delete/View Info).
-    - System Status (API/Blockchain connectivity).
-- **Team Management**:
-    - Add/Remove Admin and Moderator accounts.
-    - Assign roles (Admin, Lead Moderator, Moderator).
-- **Withdrawals**:
-    - List of user withdrawal requests.
-    - Approve/Reject actions.
-- **Users**:
-    - Searchable list of all registered users (P2E players).
-    - View wallet addresses and balances.
-- **Settings**:
-    - Configure withdrawal limits (Min/Max).
-    - Set P2E earning rates (Points per minute).
+This script will:
+- ✅ Create Google Cloud project
+- ✅ Enable required APIs
+- ✅ Create Cloud SQL databases (dev + production)
+- ✅ Create Cloud Storage buckets
+- ✅ Create service account with permissions
+- ✅ Generate GitHub secrets
+
+### Manual Setup
+
+If you prefer manual setup:
+
+1. **Create Google Cloud Project**
+   ```bash
+   gcloud projects create revenge-browser-hq
+   gcloud config set project revenge-browser-hq
+   ```
+
+2. **Enable APIs**
+   ```bash
+   gcloud services enable \
+       artifactregistry.googleapis.com \
+       run.googleapis.com \
+       sqladmin.googleapis.com \
+       cloudbuild.googleapis.com \
+       secretmanager.googleapis.com
+   ```
+
+3. **Create Resources**
+
+   **Cloud SQL (PostgreSQL)**
+   ```bash
+   # Dev Database
+   gcloud sql instances create revenge-browser-dev-db \
+       --database-version=POSTGRES_18 \
+       --tier=db-perf-optimized-N-2 \
+       --region=us-central1
+
+   # Production Database
+   gcloud sql instances create revenge-browser-prod-db \
+       --database-version=POSTGRES_18 \
+       --tier=db-perf-optimized-N-4 \
+       --region=us-central1 \
+       --availability-type=REGIONAL
+   ```
+
+   **Cloud Storage**
+   ```bash
+   gsutil mb -p revenge-browser-hq -l us-central1 gs://revenge-browser-dev-apk
+   gsutil mb -p revenge-browser-hq -l us-central1 gs://revenge-browser-prod-apk
+   ```
+
+4. **Create Service Account**
+   ```bash
+   gcloud iam service-accounts create github-actions \
+       --display-name="GitHub Actions Deployer"
+
+   # Grant roles
+   gcloud projects add-iam-policy-binding revenge-browser-hq \
+       --member="serviceAccount:github-actions@revenge-browser-hq.iam.gserviceaccount.com" \
+       --role="roles/run.admin"
+
+   gcloud projects add-iam-policy-binding revenge-browser-hq \
+       --member="serviceAccount:github-actions@revenge-browser-hq.iam.gserviceaccount.com" \
+       --role="roles/cloudsql.client"
+
+   # Create key
+   gcloud iam service-accounts keys create gcp-sa-key.json \
+       --iam-account=github-actions@revenge-browser-hq.iam.gserviceaccount.com
+   ```
+
+5. **Configure Domain**
+
+   **DNS Records:**
+   | Type | Name | Value |
+   |------|------|-------|
+   | CNAME | dev | `ghs.googlehosted.com` |
+   | CNAME | @ | `ghs.googlehosted.com` |
+
+   **Create Domain Mappings:**
+   ```bash
+   # Dev
+   gcloud run domain-mappings create \
+       --domain=dev.revengebrowser.com \
+       --service=revenge-browser-dev \
+       --region=us-central1
+
+   # Production
+   gcloud run domain-mappings create \
+       --domain=revengebrowser.com \
+       --service=revenge-browser-prod \
+       --region=us-central1
+   ```
+
+---
+
+## 🚀 CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+The project uses GitHub Actions for automated deployment:
+
+```
+Push to dev-release → Tests → Build → Deploy to dev.revengebrowser.com
+Push to main       → Tests → Build → Deploy to revengebrowser.com (canary)
+```
+
+### Required GitHub Secrets
+
+Add these at `https://github.com/YOUR_USERNAME/revenge-browser-hq/settings/secrets/actions`:
+
+#### Core Secrets
+
+| Secret Name | Value |
+|------------|-------|
+| `GCP_PROJECT_ID` | `revenge-browser-hq` |
+| `GCP_SA_KEY` | Base64 encoded service account key |
+| `GCP_ARTIFACT_REPO` | `revenge-browser` |
+
+#### Dev Environment Secrets
+
+| Secret Name | Value |
+|------------|-------|
+| `DEV_APP_URL` | `https://dev.revengebrowser.com` |
+| `DEV_DB_HOST` | `revenge-browser-hq:us-central1:revenge-browser-dev-db` |
+| `DEV_DB_DATABASE` | `revenge_browser_dev` |
+| `DEV_DB_USERNAME` | `postgres` |
+| `DEV_DB_PASSWORD` | *(your database password)* |
+| `DEV_REDIS_HOST` | `127.0.0.1` |
+| `DEV_REDIS_PASSWORD` | *(empty or redis password)* |
+| `DEV_APP_KEY` | `base64:...` (generate with `php artisan key:generate`) |
+| `DEV_STORAGE_BUCKET` | `revenge-browser-dev-apk` |
+
+#### Production Secrets
+
+| Secret Name | Value |
+|------------|-------|
+| `PROD_APP_URL` | `https://revengebrowser.com` |
+| `PROD_DB_HOST` | `revenge-browser-hq:us-central1:revenge-browser-prod-db` |
+| `PROD_DB_DATABASE` | `revenge_browser_prod` |
+| `PROD_DB_USERNAME` | `postgres` |
+| `PROD_DB_PASSWORD` | *(your database password)* |
+| `PROD_REDIS_HOST` | `127.0.0.1` |
+| `PROD_REDIS_PASSWORD` | *(empty or redis password)* |
+| `PROD_APP_KEY` | `base64:...` (generate with `php artisan key:generate`) |
+| `PROD_STORAGE_BUCKET` | `revenge-browser-prod-apk` |
+
+### Deployment Workflow
+
+1. **Push to `dev-release`**
+   ```bash
+   git checkout dev-release
+   git push origin dev-release
+   ```
+   → Auto-deploys to `dev.revengebrowser.com`
+
+2. **Push to `main`**
+   ```bash
+   git checkout main
+   git merge dev-release
+   git push origin main
+   ```
+   → Auto-deploys to `revengebrowser.com` (with 10% canary)
+
+### Manual Deployment
+
+```bash
+# Deploy to dev
+./scripts/deploy-gcp.sh dev
+
+# Deploy to production
+./scripts/deploy-gcp.sh prod
+```
+
+### Health Check
+
+After deployment, verify:
+
+```bash
+# Dev
+curl https://dev.revengebrowser.com/api/health
+
+# Production
+curl https://revengebrowser.com/api/health
+```
+
+Expected response:
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-01-29T00:00:00.000000Z",
+  "version": "1.0.0"
+}
+```
 
 ---
 
@@ -304,224 +330,373 @@ docker compose restart pgsql
 
 No authentication required.
 
-| Method | Endpoint        | Description                                          |
-| ------ | --------------- | ---------------------------------------------------- |
-| `GET`  | `/api/stats`    | Returns app statistics (download count/users).       |
-| `GET`  | `/api/download` | Initiates secure APK download. Rate-limited (5/min). |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/health` | Health check endpoint |
+| `GET` | `/api/stats` | App statistics (download count) |
+| `GET` | `/api/apk-info` | Current APK file information |
+| `GET` | `/api/download` | Secure APK download (rate-limited: 5/min) |
 
 ### Admin Endpoints
 
-Requires `Bearer <token>` (Handled via Sanitized Cookie/Session).
+Requires `Bearer <token>` via Laravel Sanctum.
 
-| Method | Endpoint                | Description                              |
-| ------ | ----------------------- | ---------------------------------------- |
-| `POST` | `/api/admin/login`      | Authenticates admin and returns token.   |
-| `POST` | `/api/admin/upload-apk` | Uploads new APK file (Max 100MB).        |
-| `GET`  | `/api/admin/apk-info`   | Returns metadata of current APK.         |
-| `GET`  | `/api/admin/me`         | Returns current authenticated user info. |
-| `GET`  | `/api/admin/team`       | List team members.                       |
-| `POST` | `/api/admin/team`       | Add new team member.                     |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/admin/login` | Authenticate admin |
+| `GET` | `/api/admin/me` | Current authenticated user |
+| `POST` | `/api/admin/logout` | Logout |
+| `POST` | `/api/admin/upload-apk` | Upload APK file (max 200MB) |
+| `GET` | `/api/admin/apk-info` | Current APK metadata |
+| `PUT` | `/api/admin/users/{id}` | Update user |
+| `GET` | `/api/admin/team` | List team members |
+| `POST` | `/api/admin/team` | Add team member |
+| `DELETE` | `/api/admin/team/{id}` | Remove team member |
 
 ---
 
-## 📁 Folder Structure Key Items
+## 🎮 Admin Panel
 
+### Features
+
+- **Dashboard**
+  - Overview stats (users, downloads, earnings)
+  - APK Management (upload, view info)
+  - System status indicators
+
+- **Team Management**
+  - Add/remove admins and moderators
+  - Assign roles (Admin, Lead Moderator, Moderator)
+
+- **Withdrawals**
+  - View pending withdrawal requests
+  - Approve/reject requests
+
+- **Users**
+  - Search and view all registered users
+  - View wallet addresses and balances
+
+- **Settings**
+  - Configure withdrawal limits
+  - Set P2E earning rates
+
+### Access URLs
+
+| Page | URL |
+|------|-----|
+| **Login** | `/admin/login` |
+| **Dashboard** | `/admin/dashboard` |
+| **Team** | `/admin/team` |
+| **Withdrawals** | `/admin/withdrawals` |
+| **Users** | `/admin/users` |
+| **Settings** | `/admin/settings` |
+
+---
+
+## 🔧 Troubleshooting
+
+### Local Development Issues
+
+**Docker credential error**
+```bash
+# Fix Docker config
+cat > ~/.docker/config.json << 'EOF'
+{
+    "auths": {}
+}
+EOF
 ```
-revenge-browser-hq/
-├── app/
-│   ├── Http/Controllers/Admin/  # Admin Logic (Dashboard, Auth, Uploads)
-│   ├── Http/Middleware/         # Custom Auth Middleware
-│   └── Models/                  # Database Models
-├── config/
-│   └── filesystems.php          # Custom 'apk' disk configuration
-├── resources/
-│   ├── css/app.css              # Custom Animations & Variables
-│   └── js/
-│       ├── Layouts/             # AdminLayout & PublicLayout
-│       └── Pages/               # React Views (Home, Admin/*)
-└── routes/
-    └── web.php                  # All Route definitions
+
+**Port conflicts**
+```bash
+# Change port in .env
+APP_PORT=8080
+
+# Restart
+./vendor/bin/sail down && ./vendor/bin/sail up -d
 ```
 
-## ⚠️ Important Configuration Notes
+**Database connection issues**
+```bash
+# Restart PostgreSQL
+./vendor/bin/sail restart pgsql
 
-1.  **APK Storage Driver**:
-    A custom disk `apk` is configured in `config/filesystems.php`. Files are stored in `storage/app/apk/`. This is separate from public uploads for security.
+# Fresh migration
+./vendor/bin/sail artisan migrate:fresh
+```
 
-2.  **CSRF Configuration**:
-    API routes (`api/*`) are excluded from strict CSRF verification in `bootstrap/app.php` to allow for token-based authentication flows if needed, though the frontend primarily uses stateful cookies.
+**Clear all caches**
+```bash
+./vendor/bin/sail artisan optimize:clear
+```
 
----
+### Deployment Issues
 
-## 🌐 URL Reference
+**Build failures**
+- Check GitHub Actions logs
+- Verify all secrets are set correctly
+- Ensure GCP_SA_KEY is valid base64
 
-### Service Ports
+**Database connection errors**
+```bash
+# Check Cloud SQL instance status
+gcloud sql instances list
 
-| Service  | Port | URL                                    | Description             |
-| -------- | ---- | -------------------------------------- | ----------------------- |
-| **App**  | 80   | http://localhost                       | Laravel Application     |
-| **Vite** | 5173 | http://localhost:5173                  | Dev Server (hot reload) |
-| **Redis** | 6379 | localhost:6379                         | Cache/Queue             |
-| **PostgreSQL** | 5432 | localhost:5432             | Database                |
-| **Mailpit** | 1025 | localhost:1025                  | SMTP Server             |
-| **Mailpit Dashboard** | 8025 | http://localhost:8025 | Email Testing UI        |
+# Verify connection string format
+# /cloudsql/PROJECT:REGION:INSTANCE
+```
 
-### Public Pages
+**Health check fails**
+```bash
+# Check service logs
+gcloud run services logs tail revenge-browser-prod --region=us-central1
 
-| Page         | URL                                                       | Description                  |
-| ------------ | --------------------------------------------------------- | ---------------------------- |
-| **Home**     | [http://localhost/](http://localhost/)                     | Landing page with new design |
-| **Download** | [http://localhost/download](http://localhost/download)     | Download page with counter   |
-| **About**    | [http://localhost/about](http://localhost/about)           | About/Story page             |
+# Verify service is running
+gcloud run services list
+```
 
-### Admin Panel
+### Common Errors
 
-**Credentials**: `admin@revenge.com` / `password123`
-
-| Page            | URL                                                                      |
-| --------------- | ------------------------------------------------------------------------ |
-| **Login**       | [http://localhost/admin/login](http://localhost/admin/login)             |
-| **Dashboard**   | [http://localhost/admin/dashboard](http://localhost/admin/dashboard)     |
-| **Team**        | [http://localhost/admin/team](http://localhost/admin/team)               |
-| **Withdrawals** | [http://localhost/admin/withdrawals](http://localhost/admin/withdrawals) |
-| **Users**       | [http://localhost/admin/users](http://localhost/admin/users)             |
-| **Settings**    | [http://localhost/admin/settings](http://localhost/admin/settings)       |
-
-### API Endpoints
-
-| Type       | Method | Endpoint                                | Note                         |
-| ---------- | ------ | --------------------------------------- | ---------------------------- |
-| **Public** | `GET`  | `http://localhost/api/stats`            | JSON stats                   |
-| **Public** | `GET`  | `http://localhost/api/download`         | File download                |
-| **Admin**  | `GET`  | `http://localhost/api/admin/apk-info`   | APK Metadata (Auth required) |
-| **Admin**  | `POST` | `http://localhost/api/admin/upload-apk` | Upload APK (Auth required)   |
+| Error | Solution |
+|-------|----------|
+| `413 Content Too Large` | PHP upload limit increased to 200MB in `docker/php.ini` |
+| `SQL connection refused` | Check Cloud SQL instance is running and VPC connector configured |
+| `Asset 404 errors` | Run `npm run build` before deployment |
+| `Permission denied` | Check service account has correct IAM roles |
 
 ---
 
-## 📝 Quick Command Reference
+## 📝 Command Reference
+
+### Docker / Sail Commands
 
 ```bash
-# ──────────────────────────────────────────────────────────
-# PROJECT MANAGEMENT
-# ──────────────────────────────────────────────────────────
-
-# Start project
+# Start containers
 ./vendor/bin/sail up -d
 
-# Stop project
+# Stop containers
 ./vendor/bin/sail down
-
-# Restart project
-./vendor/bin/sail restart
 
 # View logs
 ./vendor/bin/sail logs -f
 
-# ──────────────────────────────────────────────────────────
-# LARAVEL ARTISAN COMMANDS
-# ──────────────────────────────────────────────────────────
+# Restart containers
+./vendor/bin/sail restart
 
-# Generate application key
+# Execute artisan
+./vendor/bin/sail artisan <command>
+
+# Execute composer
+./vendor/bin/sail composer <command>
+
+# Execute npm
+./vendor/bin/sail npm <command>
+```
+
+### Artisan Commands
+
+```bash
+# Key operations
 ./vendor/bin/sail artisan key:generate
 
-# Run migrations
+# Database
 ./vendor/bin/sail artisan migrate
-
-# Run migrations with force (production)
-./vendor/bin/sail artisan migrate --force
-
-# Fresh migration (reset database)
 ./vendor/bin/sail artisan migrate:fresh
-
-# Create migration
-./vendor/bin/sail artisan make:migration <name>
-
-# Create controller
-./vendor/bin/sail artisan make:controller <name>
-
-# Create model
-./vendor/bin/sail artisan make:model <name>
-
-# Create seeder
-./vendor/bin/sail artisan make:seeder <name>
-
-# Run seeders
 ./vendor/bin/sail artisan db:seed
 
-# Cache configuration
+# Cache
 ./vendor/bin/sail artisan config:cache
-
-# Clear all caches
+./vendor/bin/sail artisan cache:clear
 ./vendor/bin/sail artisan optimize:clear
 
-# Create storage link
-./vendor/bin/sail artisan storage:link
-
-# List all routes
+# Routes
 ./vendor/bin/sail artisan route:list
 
-# Tinker (interactive console)
+# Tinker
 ./vendor/bin/sail artisan tinker
+```
 
-# ──────────────────────────────────────────────────────────
-# NPM / FRONTEND COMMANDS
-# ──────────────────────────────────────────────────────────
+### NPM Commands
 
+```bash
 # Install dependencies
 ./vendor/bin/sail npm install
 
-# Run dev server (with hot reload)
+# Development server
 ./vendor/bin/sail npm run dev
 
-# Build for production
+# Production build
 ./vendor/bin/sail npm run build
-
-# Add package
-./vendor/bin/sail npm add <package>
-
-# Remove package
-./vendor/bin/sail npm remove <package>
-
-# ──────────────────────────────────────────────────────────
-# COMPOSER COMMANDS
-# ──────────────────────────────────────────────────────────
-
-# Install packages
-./vendor/bin/sail composer install
-
-# Update packages
-./vendor/bin/sail composer update
-
-# Add package
-./vendor/bin/sail composer require <package>
-
-# Remove package
-./vendor/bin/sail composer remove <package>
-
-# Dump autoload
-./vendor/bin/sail composer dump-autoload
-
-# ──────────────────────────────────────────────────────────
-# DOCKER COMPOSE DIRECT COMMANDS
-# ──────────────────────────────────────────────────────────
-
-# View container status
-docker compose ps
-
-# Execute shell in container
-docker compose exec laravel.test bash
-
-# View logs for all services
-docker compose logs -f
-
-# View logs for specific service
-docker compose logs -f laravel.test
-docker compose logs -f pgsql
-docker compose logs -f redis
-
-# Rebuild containers
-docker compose up -d --build
-
-# Stop and remove everything (including volumes)
-docker compose down -v
 ```
+
+### Google Cloud Commands
+
+```bash
+# List services
+gcloud run services list
+
+# View logs
+gcloud run services logs tail <service-name> --region=us-central1
+
+# Describe service
+gcloud run services describe <service-name> --region=us-central1
+
+# SSH into container
+gcloud run services execute <service-name> --region=us-central1
+
+# List SQL instances
+gcloud sql instances list
+
+# Connect to database
+gcloud sql connect <instance-name> --user=postgres
+```
+
+---
+
+## 📁 Project Structure
+
+```
+revenge-browser-hq/
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── Admin/
+│   │   │   ├── AdminAuthController.php
+│   │   │   ├── DashboardController.php
+│   │   │   ├── FileUploadController.php
+│   │   │   └── TeamController.php
+│   │   ├── DownloadController.php
+│   │   └── HomeController.php
+│   └── Models/
+├── config/
+│   └── filesystems.php          # APK disk configuration
+├── deploy/
+│   ├── dev.yaml                 # Dev environment config
+│   └── production.yaml          # Production config
+├── docker/
+│   ├── nginx.conf               # Nginx configuration
+│   ├── php-fpm.conf             # PHP-FPM configuration
+│   └── php.ini                  # PHP configuration
+├── public/
+├── resources/
+│   ├── css/
+│   └── js/
+│       ├── Components/
+│       ├── Layouts/
+│       └── Pages/
+│           ├── Admin/
+│           ├── Download.jsx
+│           └── Home.jsx
+├── routes/
+│   └── web.php
+├── scripts/
+│   ├── deploy-gcp.sh            # Deployment script
+│   └── setup-gcp.sh             # GCP setup script
+├── storage/
+│   └── app/apk/                 # APK storage directory
+├── .github/
+│   └── workflows/
+│       └── deploy.yml           # CI/CD workflow
+├── .gcloudignore
+├── .env.example
+├── .gitignore
+├── compose.yaml                 # Docker Compose config
+├── Dockerfile                   # Cloud Run container
+├── DEPLOYMENT.md                # Deployment guide
+└── DOCUMENTATION.md             # This file
+```
+
+---
+
+## 🔐 Security Notes
+
+1. **APK Uploads**
+   - Maximum size: 200MB
+   - Stored in secure disk (`storage/app/apk/`)
+   - Original filename preserved
+   - Tracked via `current-apk.json`
+
+2. **Database Passwords**
+   - Use strong, unique passwords
+   - Rotate regularly
+   - Never commit to repository
+
+3. **API Keys**
+   - Store in Google Secret Manager for production
+   - Use environment-specific keys
+   - Never share service account keys
+
+4. **Rate Limiting**
+   - Download endpoint: 5 requests per minute per IP
+   - Prevents abuse and DDoS attacks
+
+---
+
+## 📊 Monitoring & Logging
+
+### Cloud Run Logs
+
+```bash
+# Tail logs
+gcloud run services logs tail revenge-browser-prod --region=us-central1
+
+# View specific logs
+gcloud logging read "resource.type=cloud_run_revision" --limit=50
+```
+
+### Database Monitoring
+
+```bash
+# SQL instance info
+gcloud sql instances describe revenge-browser-prod-db
+
+# Backup status
+gcloud sql backups list --instance=revenge-browser-prod-db
+```
+
+---
+
+## 🔄 Development Workflow
+
+1. **Feature Development**
+   ```bash
+   git checkout -b feature/your-feature
+   # Make changes
+   ./vendor/bin/sail npm run build
+   git add .
+   git commit -m "feat: add feature"
+   ```
+
+2. **Testing on Dev**
+   ```bash
+   git checkout dev-release
+   git merge feature/your-feature
+   git push origin dev-release
+   # Test at dev.revengebrowser.com
+   ```
+
+3. **Deploy to Production**
+   ```bash
+   git checkout main
+   git merge dev-release
+   git push origin main
+   # Deployed to revengebrowser.com
+   ```
+
+---
+
+## 📞 Support
+
+For issues or questions:
+- GitHub Issues: https://github.com/muftimehedi/revenge-browser-hq/issues
+- Documentation: See `DEPLOYMENT.md` for detailed deployment guide
+
+---
+
+## 📄 License
+
+[Your License Here]
+
+---
+
+**Last Updated**: January 29, 2026
+**Version**: 1.0.0
