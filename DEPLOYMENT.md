@@ -3,8 +3,8 @@
 ## Overview
 
 This project uses GitHub Actions to automatically deploy to Google Cloud Run:
-- **dev-release branch** → `dev.revengebrowser.com`
-- **main branch** → `revengebrowser.com`
+- **dev-release branch** → `dev.revenge-x-hq.com`
+- **main branch** → `revenge-x-hq.com`
 
 ---
 
@@ -37,32 +37,32 @@ export PROJECT_ID="your-project-id"
 gcloud config set project $PROJECT_ID
 
 # Create Artifact Registry
-gcloud artifacts repositories create revenge-browser \
+gcloud artifacts repositories create revenge-x-hq \
   --repository-format=docker \
   --location=us \
-  --description="Docker repository for Revenge Browser"
+  --description="Docker repository for Revenge X HQ"
 
 # Create Cloud SQL (PostgreSQL)
 # Dev
-gcloud sql instances create revenge-browser-dev-db \
+gcloud sql instances create revenge-x-hq-dev-db \
   --database-version=POSTGRES_18 \
   --tier=db-f1-micro \
   --region=us-central1
 
 # Production
-gcloud sql instances create revenge-browser-prod-db \
+gcloud sql instances create revenge-x-hq-prod-db \
   --database-version=POSTGRES_18 \
   --tier=db-custom-2-7680 \
   --region=us-central1 \
   --availability-type=REGIONAL
 
 # Create databases
-gcloud sql databases create revenge_browser_dev --instance=revenge-browser-dev-db
-gcloud sql databases create revenge_browser_prod --instance=revenge-browser-prod-db
+gcloud sql databases create revenge_x_hq_dev --instance=revenge-x-hq-dev-db
+gcloud sql databases create revenge_x_hq_prod --instance=revenge-x-hq-prod-db
 
 # Create Cloud Storage buckets
-gsutil mb -p $PROJECT_ID gs://revenge-browser-dev-apk
-gsutil mb -p $PROJECT_ID gs://revenge-browser-prod-apk
+gsutil mb -p $PROJECT_ID gs://revenge-x-hq-dev-apk
+gsutil mb -p $PROJECT_ID gs://revenge-x-hq-prod-apk
 ```
 
 ---
@@ -83,29 +83,29 @@ Add these secrets to your GitHub repository (`Settings > Secrets and variables >
 
 | Secret Name | Description |
 |------------|-------------|
-| `DEV_APP_URL` | `https://dev.revengebrowser.com` |
+| `DEV_APP_URL` | `https://dev.revenge-x-hq.com` |
 | `DEV_DB_HOST` | Cloud SQL connection name |
-| `DEV_DB_DATABASE` | `revenge_browser_dev` |
+| `DEV_DB_DATABASE` | `revenge_x_hq_dev` |
 | `DEV_DB_USERNAME` | Database username |
 | `DEV_DB_PASSWORD` | Database password |
 | `DEV_REDIS_HOST` | Redis instance IP |
 | `DEV_REDIS_PASSWORD` | Redis password |
 | `DEV_APP_KEY` | Laravel APP_KEY (base64) |
-| `DEV_STORAGE_BUCKET` | `revenge-browser-dev-apk` |
+| `DEV_STORAGE_BUCKET` | `revenge-x-hq-dev-apk` |
 
 ### Production Secrets
 
 | Secret Name | Description |
 |------------|-------------|
-| `PROD_APP_URL` | `https://revengebrowser.com` |
+| `PROD_APP_URL` | `https://revenge-x-hq.com` |
 | `PROD_DB_HOST` | Cloud SQL connection name |
-| `PROD_DB_DATABASE` | `revenge_browser_prod` |
+| `PROD_DB_DATABASE` | `revenge_x_hq_prod` |
 | `PROD_DB_USERNAME` | Database username |
 | `PROD_DB_PASSWORD` | Database password |
 | `PROD_REDIS_HOST` | Redis instance IP |
 | `PROD_REDIS_PASSWORD` | Redis password |
 | `PROD_APP_KEY` | Laravel APP_KEY (base64) |
-| `PROD_STORAGE_BUCKET` | `revenge-browser-prod-apk` |
+| `PROD_STORAGE_BUCKET` | `revenge-x-hq-prod-apk` |
 
 ---
 
@@ -171,14 +171,14 @@ php artisan key:generate --show
 ```bash
 # Dev
 gcloud run domain-mappings create \
-  --domain=dev.revengebrowser.com \
-  --service=revenge-browser-dev \
+  --domain=dev.revenge-x-hq.com \
+  --service=revenge-x-hq-dev \
   --region=us-central1
 
 # Production
 gcloud run domain-mappings create \
-  --domain=revengebrowser.com \
-  --service=revenge-browser-prod \
+  --domain=revenge-x-hq.com \
+  --service=revenge-x-hq-prod \
   --region=us-central1
 ```
 
@@ -218,7 +218,7 @@ After first deployment, run migrations:
 
 ```bash
 # Using Cloud SQL Proxy
-gcloud sql connect revenge-browser-dev-db --user=postgres
+gcloud sql connect revenge-x-hq-dev-db --user=postgres
 
 # Or via Cloud Shell
 gcloud cloud-shell ssh
@@ -236,10 +236,10 @@ After deployment, verify:
 
 ```bash
 # Dev
-curl https://dev.revengebrowser.com/api/health
+curl https://dev.revenge-x-hq.com/api/health
 
 # Production
-curl https://revengebrowser.com/api/health
+curl https://revenge-x-hq.com/api/health
 ```
 
 Expected response:
@@ -259,17 +259,17 @@ Expected response:
 
 ```bash
 # Application
-APP_NAME="Revenge Browser"
+APP_NAME="Revenge X HQ"
 APP_ENV=production
 APP_KEY=base64:...
 APP_DEBUG=false
-APP_URL=https://revengebrowser.com
+APP_URL=https://revenge-x-hq.com
 
 # Database (Cloud SQL)
 DB_CONNECTION=pgsql
 DB_HOST=/cloudsql/PROJECT:REGION:INSTANCE
 DB_PORT=5432
-DB_DATABASE=revenge_browser_prod
+DB_DATABASE=revenge_x_hq_prod
 DB_USERNAME=postgres
 DB_PASSWORD=...
 
@@ -280,7 +280,7 @@ QUEUE_CONNECTION=database
 
 # Cloud Storage
 FILESYSTEM_DISK=local
-GOOGLE_CLOUD_BUCKET=revenge-browser-prod-apk
+GOOGLE_CLOUD_BUCKET=revenge-x-hq-prod-apk
 GOOGLE_CLOUD_PROJECT_ID=...
 
 # Logging
@@ -314,7 +314,7 @@ gcloud compute networks vpc-access connectors list
 
 ```bash
 # Check service logs
-gcloud run services logs tail revenge-browser-prod --region=us-central1
+gcloud run services logs tail revenge-x-hq-prod --region=us-central1
 
 # Verify service is running
 gcloud run services list
@@ -325,7 +325,7 @@ gcloud run services list
 ## File Structure
 
 ```
-revenge-browser-hq/
+revenge-x-hq/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml          # CI/CD workflow
@@ -337,7 +337,8 @@ revenge-browser-hq/
 │   ├── php-fpm.conf            # PHP-FPM config
 │   └── php.ini                 # PHP config
 ├── scripts/
-│   └── deploy-gcp.sh           # Manual deployment script
+│   ├── deploy-gcp.sh           # Manual deployment script
+│   └── setup-gcp.sh            # Initial GCP setup script
 ├── Dockerfile                  # Container image
 ├── .gcloudignore               # Deployment exclusions
 └── routes/web.php              # With health check endpoint

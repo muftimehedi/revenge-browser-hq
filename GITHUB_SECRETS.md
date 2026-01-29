@@ -60,7 +60,7 @@ Value: ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAicmV2ZW5nZ
 ### 4. DEV_APP_URL
 ```
 Name: DEV_APP_URL
-Value: https://dev.revengebrowser.com
+Value: https://dev.revenge-x-hq.com
 ```
 
 ### 5. DEV_DB_HOST
@@ -118,7 +118,7 @@ Value: revenge-x-hq-dev-apk
 ### 13. PROD_APP_URL
 ```
 Name: PROD_APP_URL
-Value: https://revengebrowser.com
+Value: https://revenge-x-hq.com
 ```
 
 ### 14. PROD_DB_HOST
@@ -208,8 +208,8 @@ Once all secrets are added, GitHub Actions will automatically:
 
 1. **Run tests** on your code
 2. **Build Docker image** and push to Google Cloud
-3. **Deploy to dev.revengebrowser.com** (when pushing to `dev-release` branch)
-4. **Deploy to revengebrowser.com** (when pushing to `main` branch)
+3. **Deploy to dev.revenge-x-hq.com** (when pushing to `dev-release` branch)
+4. **Deploy to revenge-x-hq.com** (when pushing to `main` branch)
 
 ### Monitor Deployment
 
@@ -229,7 +229,7 @@ GCP_ARTIFACT_REPO = revenge-x-hq
 GCP_SA_KEY = (see above - long base64 string)
 
 DEV:
-DEV_APP_URL = https://dev.revengebrowser.com
+DEV_APP_URL = https://dev.revenge-x-hq.com
 DEV_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-dev-db
 DEV_DB_DATABASE = revenge_x_hq_dev
 DEV_DB_USERNAME = postgres
@@ -240,7 +240,7 @@ DEV_APP_KEY = base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
 DEV_STORAGE_BUCKET = revenge-x-hq-dev-apk
 
 PRODUCTION:
-PROD_APP_URL = https://revengebrowser.com
+PROD_APP_URL = https://revenge-x-hq.com
 PROD_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-prod-db
 PROD_DB_DATABASE = revenge_x_hq_prod
 PROD_DB_USERNAME = postgres

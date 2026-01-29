@@ -5,6 +5,12 @@ on:
     branches:
       - dev-release
       - main
+  pull_request:
+    types:
+      - closed
+    branches:
+      - dev-release
+      - main
   workflow_dispatch:
 
 env:
@@ -44,6 +50,8 @@ jobs:
     name: Build & Push Docker Image
     needs: test
     runs-on: ubuntu-latest
+    # Skip build for PRs that were closed without merging
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
     outputs:
       image: ${{ steps.build-image.outputs.image }}
       digest: ${{ steps.build-image.outputs.digest }}
@@ -94,9 +102,13 @@ jobs:
     name: Deploy to Dev
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev-release'
+    # Deploy on push to dev-release OR merged PR into dev-release
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev-release') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'dev-release')
     environment:
       name: dev
+      url: ${{ steps.deploy.outputs.url }}
 
     steps:
       - name: Checkout code
@@ -133,13 +145,29 @@ jobs:
           sleep 10
           curl -f ${{ secrets.DEV_APP_URL }}/api/health || exit 1
 
+      - name: Deployment summary
+        run: |
+          echo "### :rocket: Dev Deployment Successful! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | Dev |" >> $GITHUB_STEP_SUMMARY
+          echo "| Service URL | ${{ steps.deploy.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Domain | ${{ secrets.DEV_APP_URL }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered by | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Event | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+
   deploy-production:
     name: Deploy to Production
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # Deploy on push to main OR merged PR into main
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'main')
     environment:
       name: production
+      url: ${{ steps.deploy.outputs.url }}
 
     steps:
       - name: Checkout code
@@ -185,3 +213,15 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed. Check logs for details."
+
+      - name: Deployment summary
+        run: |
+          echo "### :rocket: Production Deployment Successful! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | Production |" >> $GITHUB_STEP_SUMMARY
+          echo "| Service URL | ${{ steps.deploy.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Domain | ${{ secrets.PROD_APP_URL }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered by | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Event | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY

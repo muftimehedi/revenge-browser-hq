@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Google Cloud Setup Script for Revenge Browser
+# Google Cloud Setup Script for Revenge X HQ
 # This script sets up all required GCP resources
 
 set -e
@@ -13,13 +13,13 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # Configuration
-PROJECT_ID="revenge-browser-hq"
-PROJECT_NAME="Revenge Browser"
+PROJECT_ID="revenge-x-hq"
+PROJECT_NAME="Revenge X HQ"
 REGION="us-central1"
 ZONE="us-central1-a"
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}Revenge Browser - GCP Setup${NC}"
+echo -e "${BLUE}Revenge X HQ - GCP Setup${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 echo "Project ID: ${PROJECT_ID}"
@@ -83,13 +83,13 @@ echo ""
 
 # Create Artifact Registry
 echo -e "${YELLOW}Step 4: Create Artifact Registry${NC}"
-if gcloud artifacts repositories describe revenge-browser --location=us --project="$PROJECT_ID" &>/dev/null; then
+if gcloud artifacts repositories describe revenge-x-hq --location=us --project="$PROJECT_ID" &>/dev/null; then
     echo -e "${GREEN}✓ Artifact Registry already exists${NC}"
 else
-    gcloud artifacts repositories create revenge-browser \
+    gcloud artifacts repositories create revenge-x-hq \
         --repository-format=docker \
         --location=us \
-        --description="Docker repository for Revenge Browser" \
+        --description="Docker repository for Revenge X HQ" \
         --project="$PROJECT_ID"
     echo -e "${GREEN}✓ Artifact Registry created${NC}"
 fi
@@ -99,11 +99,11 @@ echo ""
 echo -e "${YELLOW}Step 5: Create Cloud SQL (PostgreSQL)${NC}"
 
 # Dev database
-if gcloud sql instances describe revenge-browser-dev-db --project="$PROJECT_ID" &>/dev/null; then
+if gcloud sql instances describe revenge-x-hq-dev-db --project="$PROJECT_ID" &>/dev/null; then
     echo -e "${GREEN}✓ Dev database already exists${NC}"
 else
     echo "Creating dev database..."
-    gcloud sql instances create revenge-browser-dev-db \
+    gcloud sql instances create revenge-x-hq-dev-db \
         --database-version=POSTGRES_18 \
         --tier=db-f1-micro \
         --region="$REGION" \
@@ -113,11 +113,11 @@ else
 fi
 
 # Production database
-if gcloud sql instances describe revenge-browser-prod-db --project="$PROJECT_ID" &>/dev/null; then
+if gcloud sql instances describe revenge-x-hq-prod-db --project="$PROJECT_ID" &>/dev/null; then
     echo -e "${GREEN}✓ Production database already exists${NC}"
 else
     echo "Creating production database..."
-    gcloud sql instances create revenge-browser-prod-db \
+    gcloud sql instances create revenge-x-hq-prod-db \
         --database-version=POSTGRES_18 \
         --tier=db-custom-2-7680 \
         --region="$REGION" \
@@ -131,24 +131,24 @@ fi
 # Create databases
 echo ""
 echo "Creating databases..."
-gcloud sql databases create revenge_browser_dev --instance=revenge-browser-dev-db --project="$PROJECT_ID" 2>/dev/null || echo "Database already exists"
-gcloud sql databases create revenge_browser_prod --instance=revenge-browser-prod-db --project="$PROJECT_ID" 2>/dev/null || echo "Database already exists"
+gcloud sql databases create revenge_x_hq_dev --instance=revenge-x-hq-dev-db --project="$PROJECT_ID" 2>/dev/null || echo "Database already exists"
+gcloud sql databases create revenge_x_hq_prod --instance=revenge-x-hq-prod-db --project="$PROJECT_ID" 2>/dev/null || echo "Database already exists"
 echo -e "${GREEN}✓ Databases created${NC}"
 echo ""
 
 # Create Cloud Storage buckets
 echo -e "${YELLOW}Step 6: Create Cloud Storage Buckets${NC}"
-if gsutil ls -p "$PROJECT_ID" gs://revenge-browser-dev-apk &>/dev/null; then
+if gsutil ls -p "$PROJECT_ID" gs://revenge-x-hq-dev-apk &>/dev/null; then
     echo -e "${GREEN}✓ Dev storage bucket already exists${NC}"
 else
-    gsutil mb -p "$PROJECT_ID -l "$REGION" gs://revenge-browser-dev-apk"
+    gsutil mb -p "$PROJECT_ID" -l "$REGION" gs://revenge-x-hq-dev-apk
     echo -e "${GREEN}✓ Dev storage bucket created${NC}"
 fi
 
-if gsutil ls -p "$PROJECT_ID" gs://revenge-browser-prod-apk &>/dev/null; then
+if gsutil ls -p "$PROJECT_ID" gs://revenge-x-hq-prod-apk &>/dev/null; then
     echo -e "${GREEN}✓ Production storage bucket already exists${NC}"
 else
-    gsutil mb -p "$PROJECT_ID" -l "$REGION" gs://revenge-browser-prod-apk
+    gsutil mb -p "$PROJECT_ID" -l "$REGION" gs://revenge-x-hq-prod-apk
     echo -e "${GREEN}✓ Production storage bucket created${NC}"
 fi
 echo ""
@@ -211,8 +211,8 @@ BASE64_KEY=$(cat gcp-sa-key.json | base64 -w 0)
 
 # Get database connection info
 echo -e "${YELLOW}Step 10: Get Database Connection Info${NC}"
-DEV_DB_CONNECTION="${PROJECT_ID}:${REGION}:revenge-browser-dev-db"
-PROD_DB_CONNECTION="${PROJECT_ID}:${REGION}:revenge-browser-prod-db"
+DEV_DB_CONNECTION="${PROJECT_ID}:${REGION}:revenge-x-hq-dev-db"
+PROD_DB_CONNECTION="${PROJECT_ID}:${REGION}:revenge-x-hq-prod-db"
 echo "Dev DB Connection: ${DEV_DB_CONNECTION}"
 echo "Prod DB Connection: ${PROD_DB_CONNECTION}"
 echo ""
@@ -226,39 +226,39 @@ echo ""
 
 # Print GitHub Secrets
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}ADD THESE TO GITHUB SECTIONS${NC}"
+echo -e "${BLUE}ADD THESE TO GITHUB SECRETS${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
-echo -e "${GREEN}Go to: https://github.com/YOUR_USERNAME/revenge-browser-hq/settings/secrets/actions${NC}"
+echo -e "${GREEN}Go to: https://github.com/YOUR_USERNAME/revenge-x-hq/settings/secrets/actions${NC}"
 echo ""
 echo "Required Secrets:"
 echo ""
 echo -e "${YELLOW}# Core Secrets${NC}"
 echo "GCP_PROJECT_ID=${PROJECT_ID}"
 echo "GCP_SA_KEY=${BASE64_KEY}"
-echo "GCP_ARTIFACT_REPO=revenge-browser"
+echo "GCP_ARTIFACT_REPO=revenge-x-hq"
 echo ""
 echo -e "${YELLOW}# Dev Environment${NC}"
-echo "DEV_APP_URL=https://dev.revengebrowser.com"
+echo "DEV_APP_URL=https://dev.revenge-x-hq.com"
 echo "DEV_DB_HOST=${DEV_DB_CONNECTION}"
-echo "DEV_DB_DATABASE=revenge_browser_dev"
+echo "DEV_DB_DATABASE=revenge_x_hq_dev"
 echo "DEV_DB_USERNAME=postgres"
 echo "DEV_DB_PASSWORD=YOUR_DEV_DB_PASSWORD"
 echo "DEV_REDIS_HOST=10.0.0.3  # Update after Redis creation"
 echo "DEV_REDIS_PASSWORD=YOUR_DEV_REDIS_PASSWORD"
 echo "DEV_APP_KEY=${APP_KEY}"
-echo "DEV_STORAGE_BUCKET=revenge-browser-dev-apk"
+echo "DEV_STORAGE_BUCKET=revenge-x-hq-dev-apk"
 echo ""
 echo -e "${YELLOW}# Production Environment${NC}"
-echo "PROD_APP_URL=https://revengebrowser.com"
+echo "PROD_APP_URL=https://revenge-x-hq.com"
 echo "PROD_DB_HOST=${PROD_DB_CONNECTION}"
-echo "PROD_DB_DATABASE=revenge_browser_prod"
+echo "PROD_DB_DATABASE=revenge_x_hq_prod"
 echo "PROD_DB_USERNAME=postgres"
 echo "PROD_DB_PASSWORD=YOUR_PROD_DB_PASSWORD"
 echo "PROD_REDIS_HOST=10.0.0.4  # Update after Redis creation"
 echo "PROD_REDIS_PASSWORD=YOUR_PROD_REDIS_PASSWORD"
 echo "PROD_APP_KEY=${APP_KEY}"
-echo "PROD_STORAGE_BUCKET=revenge-browser-prod-apk"
+echo "PROD_STORAGE_BUCKET=revenge-x-hq-prod-apk"
 echo ""
 echo -e "${RED}IMPORTANT: Set strong passwords for DB and Redis!${NC}"
 echo ""
@@ -271,12 +271,12 @@ read -sp "Enter password for production database: " PROD_DB_PASSWORD
 echo ""
 
 gcloud sql users set-password postgres \
-    --instance=revenge-browser-dev-db \
+    --instance=revenge-x-hq-dev-db \
     --password="$DEV_DB_PASSWORD" \
     --project="$PROJECT_ID"
 
 gcloud sql users set-password postgres \
-    --instance=revenge-browser-prod-db \
+    --instance=revenge-x-hq-prod-db \
     --password="$PROD_DB_PASSWORD" \
     --project="$PROJECT_ID"
 

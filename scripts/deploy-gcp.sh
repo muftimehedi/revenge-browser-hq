@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Google Cloud Deployment Script
+# Google Cloud Deployment Script for Revenge X HQ
 # Usage: ./scripts/deploy-gcp.sh [dev|prod]
 
 set -e
@@ -28,17 +28,20 @@ fi
 if [ "$ENV" = "dev" ]; then
     CONFIG_FILE="$PROJECT_ROOT/deploy/dev.yaml"
     BRANCH="dev-release"
-    SERVICE_NAME="revenge-browser-dev"
-    DOMAIN="dev.revengebrowser.com"
+    SERVICE_NAME="revenge-x-hq-dev"
+    DOMAIN="dev.revenge-x-hq.com"
+    REGION="us-central1"
 else
     CONFIG_FILE="$PROJECT_ROOT/deploy/production.yaml"
     BRANCH="main"
-    SERVICE_NAME="revenge-browser-prod"
-    DOMAIN="revengebrowser.com"
+    SERVICE_NAME="revenge-x-hq-prod"
+    DOMAIN="revenge-x-hq.com"
+    REGION="us-central1"
 fi
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}Deploying to: ${ENV} (${DOMAIN})${NC}"
+echo -e "${GREEN}Revenge X HQ Deployment${NC}"
+echo -e "${GREEN}Environment: ${ENV} (${DOMAIN})${NC}"
 echo -e "${GREEN}========================================${NC}"
 
 # Check prerequisites
@@ -80,9 +83,10 @@ echo -e "${GREEN}✓ Prerequisites OK${NC}"
 echo -e "  Project: $PROJECT_ID"
 echo -e "  Branch: $BRANCH"
 echo -e "  Service: $SERVICE_NAME"
+echo -e "  Region: $REGION"
 
 # Build Docker image
-IMAGE_NAME="${REGION}-docker.pkg.dev/${PROJECT_ID}/revenge-browser/${SERVICE_NAME}:${BRANCH}-$(git rev-parse --short HEAD)"
+IMAGE_NAME="${REGION}-docker.pkg.dev/${PROJECT_ID}/revenge-x-hq/${SERVICE_NAME}:${BRANCH}-$(git rev-parse --short HEAD)"
 
 echo -e "\n${YELLOW}Building Docker image...${NC}"
 gcloud builds submit --tag "$IMAGE_NAME" --project="$PROJECT_ID"
@@ -128,3 +132,5 @@ echo -e "Service URL: ${SERVICE_URL}"
 echo -e "Domain: https://${DOMAIN}"
 echo -e "\nTo map domain, run:"
 echo -e "  gcloud run domain-mappings create --domain=${DOMAIN} --service=${SERVICE_NAME} --region=${REGION}"
+echo -e "\nTo check logs, run:"
+echo -e "  gcloud run services logs tail ${SERVICE_NAME} --region=${REGION}"

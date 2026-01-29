@@ -1,48 +1,50 @@
 # Development Environment Configuration
-# Branch: dev-release → dev.revengebrowser.com
+# Branch: dev-release → dev.revenge-x-hq.com
 
 env: dev
-project_id: your-gcp-project-id
+project_id: revenge-x-hq
 region: us-central1
 
 # Cloud Run Service
 cloud_run:
-  name: revenge-browser-dev
+  name: revenge-x-hq-dev
   min_instances: 0
   max_instances: 10
   cpu: 1
   memory: 512Mi
   concurrency: 80
   timeout: 300
+  port: 8080
 
 # Domain
-domain: dev.revengebrowser.com
+domain: dev.revenge-x-hq.com
 
 # Cloud SQL (PostgreSQL)
 cloud_sql:
-  instance_name: revenge-browser-dev-db
+  instance_name: revenge-x-hq-dev-db
   tier: db-f1-micro
-  database: revenge_browser_dev
+  database: revenge_x_hq_dev
   version: POSTGRES_18
+  connection_name: revenge-x-hq:us-central1:revenge-x-hq-dev-db
 
 # Memorystore (Redis)
 redis:
-  name: revenge-browser-dev-redis
+  name: revenge-x-hq-dev-redis
   tier: BASIC
   memory_size_gb: 1
   region: us-central1
 
 # Cloud Storage
 storage:
-  bucket: revenge-browser-dev-apk
+  bucket: revenge-x-hq-dev-apk
   location: us-central1
 
 # Environment Variables (Reference)
 env_vars:
-  APP_NAME: "Revenge Browser"
+  APP_NAME: "Revenge X HQ"
   APP_ENV: production
   APP_DEBUG: false
-  APP_URL: https://dev.revengebrowser.com
+  APP_URL: https://dev.revenge-x-hq.com
 
   LOG_LEVEL: info
   LOG_CHANNEL: stack
@@ -54,3 +56,8 @@ env_vars:
 
   # File Storage
   FILESYSTEM_DISK: local
+
+# Artifact Registry
+artifact_registry:
+  repository: revenge-x-hq
+  location: us
