@@ -50,7 +50,6 @@ jobs:
     name: Build & Push Docker Image
     needs: test
     runs-on: ubuntu-latest
-    # Skip build for PRs that were closed without merging
     if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
     outputs:
       image: ${{ steps.build-image.outputs.image }}
@@ -102,10 +101,7 @@ jobs:
     name: Deploy to Dev
     needs: build-and-push
     runs-on: ubuntu-latest
-    # Deploy on push to dev-release OR merged PR into dev-release
-    if: |
-      (github.event_name == 'push' && github.ref_name == 'dev-release') ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'dev-release')
+    if: github.ref == 'refs/heads/dev-release' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
     environment:
       name: dev
       url: ${{ steps.deploy.outputs.url }}
@@ -161,10 +157,7 @@ jobs:
     name: Deploy to Production
     needs: build-and-push
     runs-on: ubuntu-latest
-    # Deploy on push to main OR merged PR into main
-    if: |
-      (github.event_name == 'push' && github.ref_name == 'main') ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'main')
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
     environment:
       name: production
       url: ${{ steps.deploy.outputs.url }}
