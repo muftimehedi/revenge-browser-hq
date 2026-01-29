@@ -1,22 +1,21 @@
-name: Deploy to Google Cloud
+name: Deploy to Dev
 
 on:
   push:
     branches:
       - dev-release
-      - main
   pull_request:
     types:
       - closed
     branches:
       - dev-release
-      - main
   workflow_dispatch:
 
 env:
   PROJECT_ID: revenge-x-hq
   REGION: us-central1
   GAR_LOCATION: us
+  ENVIRONMENT: dev
 
 jobs:
   test:
@@ -97,11 +96,10 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
-  deploy-dev:
+  deploy:
     name: Deploy to Dev
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/heads/dev-release')
     environment:
       name: dev
       url: ${{ steps.deploy.outputs.url }}
@@ -150,71 +148,5 @@ jobs:
           echo "| Environment | Dev |" >> $GITHUB_STEP_SUMMARY
           echo "| Service URL | ${{ steps.deploy.url }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Domain | ${{ secrets.DEV_APP_URL }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Triggered by | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Event | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
-
-  deploy-production:
-    name: Deploy to Production
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/heads/main')
-    environment:
-      name: production
-      url: ${{ steps.deploy.outputs.url }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Deploy to Cloud Run
-        id: deploy
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: revenge-x-hq-prod
-          region: ${{ env.REGION }}
-          image: ${{ needs.build-and-push.outputs.image }}
-          flags: |
-            --allow-unauthenticated
-            --memory=1Gi
-            --cpu=2
-            --min-instances=2
-            --max-instances=100
-            --timeout=300
-            --port=8080
-            --set-env-vars=DB_HOST=${{ secrets.PROD_DB_HOST }},DB_DATABASE=${{ secrets.PROD_DB_DATABASE }},DB_USERNAME=${{ secrets.PROD_DB_USERNAME }},DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }},REDIS_HOST=${{ secrets.PROD_REDIS_HOST }},REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD }},APP_KEY=${{ secrets.PROD_APP_KEY }},APP_URL=${{ secrets.PROD_APP_URL }},APP_ENV=production,APP_DEBUG=false,FILESYSTEM_DISK=local,LOG_LEVEL=warning,GOOGLE_CLOUD_BUCKET=${{ secrets.PROD_STORAGE_BUCKET }}
-
-      - name: Get service URL
-        run: |
-          echo "Service deployed at: ${{ steps.deploy.url }}"
-
-      - name: Health check
-        run: |
-          sleep 10
-          curl -f ${{ secrets.PROD_APP_URL }}/api/health || exit 1
-
-      - name: Notify deployment success
-        if: success()
-        run: |
-          echo "Production deployment successful!"
-
-      - name: Rollback on failure
-        if: failure()
-        run: |
-          echo "Deployment failed. Check logs for details."
-
-      - name: Deployment summary
-        run: |
-          echo "### :rocket: Production Deployment Successful! :rocket:" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Environment | Production |" >> $GITHUB_STEP_SUMMARY
-          echo "| Service URL | ${{ steps.deploy.url }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Domain | ${{ secrets.PROD_APP_URL }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Triggered by | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Event | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
