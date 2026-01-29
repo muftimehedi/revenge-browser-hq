@@ -1,29 +1,90 @@
 # GitHub Secrets Setup Guide
 
-## 📋 Overview
+## Table of Contents
 
-This guide explains how to add all required GitHub Secrets for the CI/CD pipeline to deploy your Revenge X HQ project to Google Cloud.
-
-**Total Secrets Required: 21**
+1. [Quick Start](#quick-start)
+2. [Required Secrets Overview](#required-secrets-overview)
+3. [Step-by-Step Setup](#step-by-step-setup)
+4. [Add Each Secret](#add-each-secret)
+5. [Verification](#verification)
+6. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1. Go to GitHub Secrets Page
+### Go to GitHub Secrets Page
 
 Click this link or copy/paste into your browser:
 ```
 https://github.com/muftimehedi/revenge-x-hq/settings/secrets/actions
 ```
 
-### 2. You'll See This Page
+---
 
-Click the **"New repository secret"** button.
+## Required Secrets Overview
+
+**Total Secrets Required: 21**
+
+### Priority Order (Add in This Order)
+
+1. **Core Secrets (3)** - Required for CI/CD to work
+2. **Dev Environment Secrets (9)** - Required for dev deployment
+3. **Production Secrets (9)** - Required for production deployment
 
 ---
 
-## 📝 Add Each Secret
+## Step-by-Step Setup
+
+### Step 1: Create Service Account & Generate Key
+
+**Using Google Cloud Console:**
+
+1. **Go to Service Accounts Page**
+   ```
+   https://console.cloud.google.com/iam-admin/serviceaccounts?project=revenge-x-hq
+   ```
+
+2. **Create Service Account**
+   - Click **"Create Service Account"**
+   - **Service account name**: `github-actions`
+   - **Service account description**: `GitHub Actions Deployer`
+   - Click **"Create and Continue"**
+
+3. **Grant Roles** (click **"Continue"** after each, then **"Done"**)
+   - ☑️ **Cloud Run Admin** (`roles/run.admin`)
+   - ☑️ **Cloud SQL Client** (`roles/cloudsql.client`)
+   - ☑️ **Storage Object Admin** (`roles/storage.objectAdmin`)
+   - ☑️ **Artifact Registry Writer** (`roles/artifactregistry.writer`)
+
+4. **Create Service Account Key**
+   - Click on the **`github-actions`** service account (from the list)
+   - Go to **"Keys"** tab
+   - Click **"Add Key"** → **"Create new key"**
+   - Key type: **JSON**
+   - Click **"Create"**
+   - The JSON file will download automatically
+
+5. **Convert Key to Base64**
+
+   **On macOS/Linux:**
+   ```bash
+   cat ~/Downloads/*.json | base64 -w 0
+   ```
+
+   **On Windows (PowerShell):**
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("$HOME\Downloads\*.json"))
+   ```
+
+   **Online Tool (Alternative):**
+   - Go to: https://www.base64encode.org/
+   - Upload the JSON file
+   - Copy the encoded string
+
+---
+
+## Add Each Secret
 
 For each secret below:
 1. Click **"New repository secret"**
@@ -33,79 +94,85 @@ For each secret below:
 
 ---
 
-## 🔑 Core Secrets (3 required)
+### Part 1: Core Secrets (3 required)
 
-### 1. GCP_PROJECT_ID
+#### Secret 1: GCP_PROJECT_ID
 ```
 Name: GCP_PROJECT_ID
 Value: revenge-x-hq
 ```
 
-### 2. GCP_ARTIFACT_REPO
+#### Secret 2: GCP_ARTIFACT_REPO
 ```
 Name: GCP_ARTIFACT_REPO
 Value: revenge-x-hq
 ```
 
-### 3. GCP_SA_KEY
+#### Secret 3: GCP_SA_KEY
 ```
 Name: GCP_SA_KEY
-Value: ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAicmV2ZW5nZS1icm93c2VyLWhxIiwKICAicHJpdmF0ZV9rZXlfaWQiOiAiN2JiZDAwNjFjZDk2YWQ4MjZkMzE5NGM2M2MzMWExNjIyOWRhMDBjMiIsCiAgInByaXZhdGVfa2V5IjogIi0tLS0tQkVHSU4gUFJJVkFURSBLRVktLS0tLVxuTUlJRXZRSUJBREFOQmdrcWhraUc5dzBCQVFFRkFBU0NCS2N3Z2dTakFnRUFBb0lCQVFEY0FmR3RseVFtNEJwclxudFJLZXN4ZHJCdzByZWN1MlhEb0ZVdlVHNWZDamZCNFlONHlJcG5iWFRnYTcxbmp1SkkvL00xZk1JcjNlYThNbFxuZExPUEFsVHR5YlFQQjhYbFoxanBISGNxd0tNY0R5a2ZidWlQeXRMT0FTSjNDYWZCY2luNVdVRjlzQi9BY3ZaV1xuV0FPTEU1cXgxT0NzNTdDWlQyT21mazd2dTV0QlhTVHRyOW5VRmEvNXlQUlBlTVozY01ad296bnRzWEdmTncyYVxuRFRnbHdxbnFxQjg2cEtjeWp5Qkt2c1R1eURVcVQ4MG41dmxuUkJ3V3JyaS9ycnBsZXNEcFdFWTloQjhYK0wrclxuMXl5SVpUTHpmQlhWS1pFYUlHd010YjIrc3FwVURQbjM4VVpPdElVdkNuOVdsOTA5NHh5MDgrM2IxaXU3TStXdFxuSEEvWVNWQzlBZ01CQUFFQ2dnRUFIVTU4L1J5M0NoNnNKbERXakNGYkt6eWpPbmxjODR4UmhzZ0lMOFVOaXhtTFxuZ0xwVmxCWm9ta0dna0FELzF1a3o3VkRQanNmSmh3bGYwMnQ2UjhDTnc2Y3N2eHZQOXNFUGpPM255ZUFqV2llQ1xuMk5jVFQ2UTY5SW9lSnpFNEVZSzlxS09GSDlNSVI4Q0lvL1BSZFFORmhQNEFkOGZkTkc3bzNWTFIvUWxHb3l3ZlxuOWhDUzdXaFR4SDZTUDJMaEFnUWIzdFBuL0xrbmV6L05lakpqVFhEUFNtMDVBNzZ5NHZuTFYrRFgvVENFc1lZelxualc2dUFJY0ozQWFQMXpMR1prWVFhaXY4YXNmUFdNSS8zbys0V3JnazZGRmhITHlBbWVFWVVQM0JFd3pGVHIwcFxuRVRRMk5RZnhMb0R1STNtaGx6ZkJyVVpLcG43Wk5uK2JVYVdPbHJFUUFRS0JnUUR2K0ZvNjhaN05RckE5YVlwc1xucWk3bytrOVFKNnViaG9DMWJVdGxXK0Fpc3JjeldWNjVBMVU0SktoSkRSemp4ZGJIWXE5cnZXcmx6TFNURDlZSlxuWDlTUTNTZUFPRlBlY2t4S1QrTFhKMGJkcUJNdTVFbmUyWnNjcDlSeWRuMnpGSXF0cWtIMWZBZFNuWlVXUW94T1xuNGZtcENpZ3FIbU9OTkRRa2FDRnhia2hXQVFLQmdRRHF0RGdYYUZKZk01alczTjI5NDJURG9TWEtxK1FNZ3FiMVxuRHlUSEgyUVBtU284dWtmSjVBVGhIdDVjZ1BGMi9CeHhvcXFVVUdFV3czdndm5pL1TWExwMXR3VjVTU2UrcW0rZlxuSnRUQS9IYWNJTkthWnNTdHlKZ0RZaDhiaE11UWM3RTQ4Rlo3RW14RWdHT0EvclF5aktyM0VWOXhmZkkvSUNvYVxudXVVbGlGWFN2UUtCZ0FzQnV6SEU3MkcrMDFLZHlxbWRUTFdHOWFoWmlYZUN2ZGlVZ01iUFpnSnhiQkhBNGFWZVxuejhQWmVwYVBNV29KSXdiV01mR2hLSXdOemFLSk1Xb1FxVEZUMDRJQUUyaTZtV0UzTk5KbGpNeVI3djlSblVuSlxuZFdIbEdNdC9QOWk4OG5kd3ZjSEN4SnMzZXlVZ1BFdEo5aWVZdmFyZzVmUU9GdTRza0l3aFlOUUJBb0dBZlJKRVxud2RTSjhNbWlMUDNOL0o3czE0Tk1qRkJHV3BWVk8wb3lveG9MVEhTbW1XMzdTNDhET3FRa2dzOEQzaEJEYUJyelxuSTg0aHJ1dkZaRmdPTjUvS2pXaFd0bWRSa3Ixb2RqdFBMUGhjako3QkhCNmZ1S3dvdGNUWUp1WUJSSjBpVitGYlxuZElKQXg5QlROaTZGQUZzTjBGT2x0T2tVNnFiTlNTbEhhMVRYeDFFQ2dZRUF6eDhnR1YrNGRzRDZYOFBVaEZWSVxuM04xdVArdVZJOVRpM2J5U0dCVWU2MWhDK1grKzlpZHB4a1RsWnVIQWFkOUtHeFNDZHRBR2IxZHV6emQ1SGgrNlxuYjlPRG55dTA5L3BCNWhya3BjUE93ZE5wYS8vVzh2dHQ1dXg3RGpsajhnUE91bkpWNEVPaHc3QzJacm12UWNsZVxuazBqMm5XOHlScmJaZUwrS2Z0OWIzUFU9XG4tLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tXG4iLAogICJjbGllbnRfZW1haWwiOiAiZ2l0aHViLWFjdGlvbnNAcmV2ZW5nZS1icm93c2VyLWhxLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwKICAiY2xpZW50X2lkIjogIjEwNTUxNDg1NjcxNjMyNDQ5MzMwNCIsCiAgImF1dGhfdXJpIjogImh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbS9vL29hdXRoMi9hdXRoIiwKICAidG9rZW5fdXJpIjogImh0dHBzOi8vb2F1dGgyLmdvb2dsZWFwaXMuY29tL3Rva2VuIiwKICAiYXV0aF9wcm92aWRlcl94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92MS9jZXJ0cyIsCiAgImNsaWVudF94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL3JvYm90L3YxL21ldGFkYXRhL3g1MDkvZ2l0aHViLWFjdGlvbnMlNDByZXZlbmdlLWJyb3dzZXItaHEuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJ1bml2ZXJzZV9kb21haW4iOiAiZ29vZ2xlYXBpcy5jb20iCn0K
+Value: [Paste the base64 encoded service account key from Step 1]
 ```
+
+**⚠️ IMPORTANT:** These 3 secrets are the **minimum required** for CI/CD to work. Without them, the workflow will fail.
 
 ---
 
-## 🔷 Dev Environment Secrets (9 required)
+### Part 2: Dev Environment Secrets (9 required)
 
-### 4. DEV_APP_URL
+#### Secret 4: DEV_APP_URL
 ```
 Name: DEV_APP_URL
 Value: https://dev.revenge-x-hq.com
 ```
 
-### 5. DEV_DB_HOST
+#### Secret 5: DEV_DB_HOST
 ```
 Name: DEV_DB_HOST
 Value: revenge-x-hq:us-central1:revenge-x-hq-dev-db
 ```
 
-### 6. DEV_DB_DATABASE
+#### Secret 6: DEV_DB_DATABASE
 ```
 Name: DEV_DB_DATABASE
 Value: revenge_x_hq_dev
 ```
 
-### 7. DEV_DB_USERNAME
+#### Secret 7: DEV_DB_USERNAME
 ```
 Name: DEV_DB_USERNAME
 Value: postgres
 ```
 
-### 8. DEV_DB_PASSWORD
+#### Secret 8: DEV_DB_PASSWORD
 ```
 Name: DEV_DB_PASSWORD
-Value: hpfArgUglX2K3lNkSGTQOTY5VJhj3lE8
+Value: [Your chosen password for dev database]
 ```
 
-### 9. DEV_REDIS_HOST
+#### Secret 9: DEV_REDIS_HOST
 ```
 Name: DEV_REDIS_HOST
 Value: 127.0.0.1
 ```
 
-### 10. DEV_REDIS_PASSWORD
+#### Secret 10: DEV_REDIS_PASSWORD
 ```
 Name: DEV_REDIS_PASSWORD
-Value: (leave this field empty)
+Value: [Leave empty or enter redis password]
 ```
 
-### 11. DEV_APP_KEY
+#### Secret 11: DEV_APP_KEY
+Generate this key:
+```bash
+php artisan key:generate --show
+```
 ```
 Name: DEV_APP_KEY
-Value: base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
+Value: [Paste the generated key - starts with base64:]
 ```
 
-### 12. DEV_STORAGE_BUCKET
+#### Secret 12: DEV_STORAGE_BUCKET
 ```
 Name: DEV_STORAGE_BUCKET
 Value: revenge-x-hq-dev-apk
@@ -113,57 +180,57 @@ Value: revenge-x-hq-dev-apk
 
 ---
 
-## 🔶 Production Environment Secrets (9 required)
+### Part 3: Production Environment Secrets (9 required)
 
-### 13. PROD_APP_URL
+#### Secret 13: PROD_APP_URL
 ```
 Name: PROD_APP_URL
 Value: https://revenge-x-hq.com
 ```
 
-### 14. PROD_DB_HOST
+#### Secret 14: PROD_DB_HOST
 ```
 Name: PROD_DB_HOST
 Value: revenge-x-hq:us-central1:revenge-x-hq-prod-db
 ```
 
-### 15. PROD_DB_DATABASE
+#### Secret 15: PROD_DB_DATABASE
 ```
 Name: PROD_DB_DATABASE
 Value: revenge_x_hq_prod
 ```
 
-### 16. PROD_DB_USERNAME
+#### Secret 16: PROD_DB_USERNAME
 ```
 Name: PROD_DB_USERNAME
 Value: postgres
 ```
 
-### 17. PROD_DB_PASSWORD
+#### Secret 17: PROD_DB_PASSWORD
 ```
 Name: PROD_DB_PASSWORD
-Value: Maubd3+fyICFZrS04o3Bi55zyP7kDqdi
+Value: [Your chosen password for production database - use strong password!]
 ```
 
-### 18. PROD_REDIS_HOST
+#### Secret 18: PROD_REDIS_HOST
 ```
 Name: PROD_REDIS_HOST
 Value: 127.0.0.1
 ```
 
-### 19. PROD_REDIS_PASSWORD
+#### Secret 19: PROD_REDIS_PASSWORD
 ```
 Name: PROD_REDIS_PASSWORD
-Value: (leave this field empty)
+Value: [Leave empty or enter redis password]
 ```
 
-### 20. PROD_APP_KEY
+#### Secret 20: PROD_APP_KEY
 ```
 Name: PROD_APP_KEY
-Value: base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
+Value: [Same as DEV_APP_KEY or generate new one]
 ```
 
-### 21. PROD_STORAGE_BUCKET
+#### Secret 21: PROD_STORAGE_BUCKET
 ```
 Name: PROD_STORAGE_BUCKET
 Value: revenge-x-hq-prod-apk
@@ -171,42 +238,48 @@ Value: revenge-x-hq-prod-apk
 
 ---
 
-## ✅ Verification
+## Verification
 
 After adding all secrets, verify they appear in your secrets list:
 
 **Go to:** https://github.com/muftimehedi/revenge-x-hq/settings/secrets/actions
 
 You should see all 21 secrets listed:
-- GCP_PROJECT_ID
-- GCP_ARTIFACT_REPO
-- GCP_SA_KEY
-- DEV_APP_URL
-- DEV_DB_HOST
-- DEV_DB_DATABASE
-- DEV_DB_USERNAME
-- DEV_DB_PASSWORD
-- DEV_REDIS_HOST
-- DEV_REDIS_PASSWORD
-- DEV_APP_KEY
-- DEV_STORAGE_BUCKET
-- PROD_APP_URL
-- PROD_DB_HOST
-- PROD_DB_DATABASE
-- PROD_DB_USERNAME
-- PROD_DB_PASSWORD
-- PROD_REDIS_HOST
-- PROD_REDIS_PASSWORD
-- PROD_APP_KEY
-- PROD_STORAGE_BUCKET
+
+### Core Secrets (3)
+- ✓ GCP_PROJECT_ID
+- ✓ GCP_ARTIFACT_REPO
+- ✓ GCP_SA_KEY
+
+### Dev Environment (9)
+- ✓ DEV_APP_URL
+- ✓ DEV_DB_HOST
+- ✓ DEV_DB_DATABASE
+- ✓ DEV_DB_USERNAME
+- ✓ DEV_DB_PASSWORD
+- ✓ DEV_REDIS_HOST
+- ✓ DEV_REDIS_PASSWORD
+- ✓ DEV_APP_KEY
+- ✓ DEV_STORAGE_BUCKET
+
+### Production Environment (9)
+- ✓ PROD_APP_URL
+- ✓ PROD_DB_HOST
+- ✓ PROD_DB_DATABASE
+- ✓ PROD_DB_USERNAME
+- ✓ PROD_DB_PASSWORD
+- ✓ PROD_REDIS_HOST
+- ✓ PROD_REDIS_PASSWORD
+- ✓ PROD_APP_KEY
+- ✓ PROD_STORAGE_BUCKET
 
 ---
 
-## 🚀 After Adding Secrets
+## After Adding Secrets
 
 Once all secrets are added, GitHub Actions will automatically:
 
-1. **Run tests** on your code
+1. **Run tests** on your code (with PostgreSQL and frontend build)
 2. **Build Docker image** and push to Google Cloud
 3. **Deploy to dev.revenge-x-hq.com** (when pushing to `dev-release` branch)
 4. **Deploy to revenge-x-hq.com** (when pushing to `main` branch)
@@ -220,64 +293,159 @@ https://github.com/muftimehedi/revenge-x-hq/actions
 
 ---
 
-## 📋 Quick Reference (Copy All)
+## Quick Reference (Copy All)
 
 ```
-CORE:
+=====================================
+CORE SECRETS (Required First)
+=====================================
 GCP_PROJECT_ID = revenge-x-hq
 GCP_ARTIFACT_REPO = revenge-x-hq
-GCP_SA_KEY = (see above - long base64 string)
+GCP_SA_KEY = [Base64 encoded service account key]
 
-DEV:
+=====================================
+DEV ENVIRONMENT
+=====================================
 DEV_APP_URL = https://dev.revenge-x-hq.com
 DEV_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-dev-db
 DEV_DB_DATABASE = revenge_x_hq_dev
 DEV_DB_USERNAME = postgres
-DEV_DB_PASSWORD = hpfArgUglX2K3lNkSGTQOTY5VJhj3lE8
+DEV_DB_PASSWORD = [your password]
 DEV_REDIS_HOST = 127.0.0.1
-DEV_REDIS_PASSWORD = (empty)
-DEV_APP_KEY = base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
+DEV_REDIS_PASSWORD = [empty or password]
+DEV_APP_KEY = [from php artisan key:generate]
 DEV_STORAGE_BUCKET = revenge-x-hq-dev-apk
 
-PRODUCTION:
+=====================================
+PRODUCTION ENVIRONMENT
+=====================================
 PROD_APP_URL = https://revenge-x-hq.com
 PROD_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-prod-db
 PROD_DB_DATABASE = revenge_x_hq_prod
 PROD_DB_USERNAME = postgres
-PROD_DB_PASSWORD = Maubd3+fyICFZrS04o3Bi55zyP7kDqdi
+PROD_DB_PASSWORD = [your strong password]
 PROD_REDIS_HOST = 127.0.0.1
-PROD_REDIS_PASSWORD = (empty)
-PROD_APP_KEY = base64:xnDQovxN3Vk6EGmVGTalcsiNj3iIHp+5YMcqYka5Tu8=
+PROD_REDIS_PASSWORD = [empty or password]
+PROD_APP_KEY = [same as dev or generate new]
 PROD_STORAGE_BUCKET = revenge-x-hq-prod-apk
 ```
 
 ---
 
-## ❓ Troubleshooting
+## Troubleshooting
 
-**Q: I can't find the secrets page**
+### Q: I don't have access to the revenge-x-hq project
+
+**A:** You have two options:
+
+1. **Request access** from the project owner
+2. **Use your own GCP project**:
+   - Create a service account in your project
+   - Add the required roles (Cloud Run Admin, Cloud SQL Client, Storage Object Admin, Artifact Registry Writer)
+   - Update `GCP_PROJECT_ID` secret to your project ID
+
+### Q: Where do I find the service account key?
+
+**A:**
+1. Go to: https://console.cloud.google.com/iam-admin/serviceaccounts
+2. Select your project: `revenge-x-hq`
+3. Click on `github-actions` service account
+4. Go to "Keys" tab
+5. Click "Add Key" → "Create new key"
+
+### Q: The workflow fails after adding secrets
+
+**A:** Check the following:
+- All secret names match exactly (case-sensitive)
+- `GCP_SA_KEY` has no extra spaces or newlines
+- Service account has all required roles
+- You added at least the 3 core secrets
+
+### Q: How do I update a secret?
+
+**A:**
+1. Click on the secret name
+2. Click "Update secret"
+3. Paste new value and save
+
+### Q: I can't find the secrets page
+
+**A:**
 - Make sure you're logged into GitHub
-- Use the direct link above
+- Use the direct link: https://github.com/muftimehedi/revenge-x-hq/settings/secrets/actions
 - Go to: Settings → Secrets and variables → Actions
 
-**Q: The workflow fails after adding secrets**
-- Check all secret names match exactly (case-sensitive)
-- Verify GCP_SA_KEY has no extra spaces
-- Make sure you added all 21 secrets
+### Q: The CI/CD still fails with authentication error
 
-**Q: How do I update a secret?**
-- Click on the secret name
-- Click "Update secret"
-- Paste new value and save
+**A:** Verify:
+1. Service account key is valid and not expired
+2. Base64 encoding is correct (no extra characters)
+3. Service account has these roles:
+   - `roles/run.admin`
+   - `roles/cloudsql.client`
+   - `roles/storage.objectAdmin`
+   - `roles/artifactregistry.writer`
 
 ---
 
-## 📞 Support
+## Using Your Own GCP Project
 
-If you need help:
-- Check the main documentation: `DOCUMENTATION.md`
-- GitHub Issues: https://github.com/muftimehedi/revenge-x-hq/issues
+If you're using your own GCP project instead of `revenge-x-hq`:
+
+### Update These Secrets:
+
+```
+GCP_PROJECT_ID = [your-project-id]
+GCP_ARTIFACT_REPO = [your-repo-name]
+```
+
+### Update Database Hosts:
+
+```
+DEV_DB_HOST = [your-project]:us-central1:[your-dev-db-instance]
+PROD_DB_HOST = [your-project]:us-central1:[your-prod-db-instance]
+```
+
+---
+
+## Security Notes
+
+⚠️ **Important Security Practices:**
+
+1. **Never commit** service account keys to the repository
+2. **Use strong, unique passwords** for database passwords
+3. **Rotate keys regularly** - every 90 days recommended
+4. **Limit access** - only give access to team members who need it
+5. **Monitor usage** - check Google Cloud logs for suspicious activity
+6. **Delete old keys** - remove unused keys from service accounts
+
+---
+
+## What Each Secret Does
+
+| Secret | Purpose |
+|--------|---------|
+| `GCP_PROJECT_ID` | Identifies your Google Cloud project |
+| `GCP_SA_KEY` | Authenticates GitHub Actions to GCP |
+| `GCP_ARTIFACT_REPO` | Docker image repository name |
+| `DEV_APP_URL` | Base URL for dev environment |
+| `DEV_DB_*` | Database connection for dev |
+| `DEV_APP_KEY` | Laravel encryption key for dev |
+| `DEV_STORAGE_BUCKET` | Cloud Storage bucket for dev APKs |
+| `PROD_APP_URL` | Base URL for production |
+| `PROD_DB_*` | Database connection for production |
+| `PROD_APP_KEY` | Laravel encryption key for production |
+| `PROD_STORAGE_BUCKET` | Cloud Storage bucket for production APKs |
+
+---
+
+## Need Help?
+
+- **GitHub Issues**: https://github.com/muftimehedi/revenge-x-hq/issues
+- **Deployment Guide**: See `DEPLOYMENT.md`
+- **Full Documentation**: See `DOCUMENTATION.md`
 
 ---
 
 **Last Updated:** January 29, 2026
+**Version:** 2.0
