@@ -60,7 +60,6 @@ COPY . .
 
 # Copy built frontend assets
 COPY --from=frontend /app/public/build ./public/build
-COPY --from=frontend /app/public/hot ./public/hot
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
