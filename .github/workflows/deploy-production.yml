@@ -134,9 +134,76 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
+  notify-start:
+    name: Notify Deployment Started
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
+
+    steps:
+      - name: Send Discord notification
+        if: vars.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "content": "**:rocket: Production Deployment Started**\n\n**Branch:** `${{ github.ref_name }}`\n**Commit:** `${{ github.sha }}`\n**Triggered by:** ${{ github.actor }}\n**Event:** ${{ github.event_name }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "username": "CI/CD Bot",
+              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+            }' || echo "Discord notification failed"
+
+      - name: Send Slack notification
+        if: secrets.SLACK_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": ":rocket: Production Deployment Started",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Production Deployment Started"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Branch:*\n`${{ github.ref_name }}`"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n`${{ github.sha }}`"},
+                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"},
+                    {"type": "mrkdwn", "text": "*Event:*\n${{ github.event_name }}"}
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": ":warning: *Production changes in progress*"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }' || echo "Slack notification failed"
+
   deploy:
     name: Deploy to Production
-    needs: build-and-push
+    needs: [build-and-push, notify-start]
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -150,6 +217,17 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Get previous revision
+        id: previous-revision
+        run: |
+          PREVIOUS_REVISION=$(gcloud run services revisions list revenge-x-hq-prod \
+            --region ${{ env.REGION }} \
+            --format="value(name)" \
+            --sort-by=~createTime \
+            --limit=2 | tail -n 1)
+          echo "revision=$PREVIOUS_REVISION" >> $GITHUB_OUTPUT
+          echo "Previous revision: $PREVIOUS_REVISION"
 
       - name: Deploy to Cloud Run
         id: deploy
@@ -172,29 +250,363 @@ jobs:
         run: |
           echo "Service deployed at: ${{ steps.deploy.url }}"
 
-      - name: Health check
-        run: |
-          sleep 10
-          curl -f ${{ secrets.PROD_APP_URL }}/api/health || exit 1
+  migrate:
+    name: Run Database Migrations
+    needs: deploy
+    runs-on: ubuntu-latest
 
-      - name: Notify deployment success
-        if: success()
-        run: |
-          echo "Production deployment successful!"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Rollback on failure
-        if: failure()
-        run: |
-          echo "Deployment failed. Check logs for details."
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Deployment summary
+      - name: Deploy Cloud Run job for migrations
         run: |
-          echo "### :rocket: Production Deployment Successful! :rocket:" >> $GITHUB_STEP_SUMMARY
+          gcloud run jobs deploy revenge-x-hq-prod-migrate \
+            --image ${{ needs.build-and-push.outputs.image }} \
+            --region ${{ env.REGION }} \
+            --command="php" \
+            --args="artisan,migrate,--force" \
+            --set-env-vars="DB_HOST=${{ secrets.PROD_DB_HOST }},DB_DATABASE=${{ secrets.PROD_DB_DATABASE }},DB_USERNAME=${{ secrets.PROD_DB_USERNAME }},DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }},APP_KEY=${{ secrets.PROD_APP_KEY }},APP_ENV=production" \
+            --memory=256Mi \
+            --cpu=1 \
+            --task-timeout=300s \
+            --max-retries=0 \
+            --quiet || echo "Job deploy failed, will try execution"
+
+      - name: Execute migration job
+        run: |
+          gcloud run jobs execute revenge-x-hq-prod-migrate \
+            --region ${{ env.REGION }} \
+            --wait \
+            --format="value(status.tasks[0].status)" || true
+
+      - name: Cleanup migration job
+        if: always()
+        run: |
+          gcloud run jobs delete revenge-x-hq-prod-migrate \
+            --region ${{ env.REGION }} \
+            --quiet || true
+
+  health-check:
+    name: Health Check
+    needs: [deploy, migrate]
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.health.outputs.status }}
+
+    steps:
+      - name: Wait for service to be ready
+        run: sleep 15
+
+      - name: Check health endpoint
+        id: health
+        run: |
+          set +e
+          for i in {1..5}; do
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PROD_APP_URL }}/api/health)
+            echo "Attempt $i: HTTP Status $RESPONSE"
+            if [ "$RESPONSE" = "200" ]; then
+              echo "status=success" >> $GITHUB_OUTPUT
+              echo "status=success" >> $GITHUB_ENV
+              echo "Health check passed!"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "status=failed" >> $GITHUB_OUTPUT
+          echo "status=failed" >> $GITHUB_ENV
+          echo "Health check failed after 5 attempts"
+          exit 1
+
+  rollback:
+    name: Rollback Deployment
+    needs: [deploy, health-check]
+    runs-on: ubuntu-latest
+    if: failure() && needs.health-check.outputs.status == 'failed'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Get previous revision
+        id: previous-revision
+        run: |
+          PREVIOUS_REVISION=$(gcloud run services revisions list revenge-x-hq-prod \
+            --region ${{ env.REGION }} \
+            --format="value(name)" \
+            --sort-by=~createTime \
+            --limit=2 | tail -n 1)
+          echo "revision=$PREVIOUS_REVISION" >> $GITHUB_OUTPUT
+          echo "Rolling back to revision: $PREVIOUS_REVISION"
+
+      - name: Rollback to previous revision
+        run: |
+          gcloud run services update revenge-x-hq-prod \
+            --region ${{ env.REGION }} \
+            --revision=${{ steps.previous-revision.outputs.revision }} \
+            --quiet || echo "Rollback failed, please manually revert"
+
+      - name: Wait for rollback to complete
+        run: sleep 20
+
+      - name: Verify rollback health
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PROD_APP_URL }}/api/health)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "Rollback health check failed with status: $RESPONSE"
+            echo "MANUAL INTERVENTION REQUIRED"
+            exit 1
+          fi
+          echo "Rollback successful and healthy!"
+
+  notify-success:
+    name: Notify Deployment Success
+    needs: [build-and-push, deploy, migrate, health-check, rollback]
+    runs-on: ubuntu-latest
+    if: success() && !needs.rollback.result
+
+    steps:
+      - name: Send Discord notification
+        if: vars.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "content": "**:white_check_mark: Production Deployment Successful**\n\n**Branch:** `${{ github.ref_name }}`\n**Service URL:** ${{ secrets.PROD_APP_URL }}\n**Triggered by:** ${{ github.actor }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "username": "CI/CD Bot",
+              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+            }' || echo "Discord notification failed"
+
+      - name: Send Slack notification
+        if: secrets.SLACK_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": ":white_check_mark: Production Deployment Successful",
+              "color": "#36a64f",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Production Deployment Successful",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
+                    {"type": "mrkdwn", "text": "*Service URL:*\n${{ secrets.PROD_APP_URL }}"},
+                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"}
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Visit Production"
+                      },
+                      "url": "${{ secrets.PROD_APP_URL }}"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }' || echo "Slack notification failed"
+
+  notify-rollback:
+    name: Notify Rollback
+    needs: [build-and-push, deploy, migrate, health-check, rollback]
+    runs-on: ubuntu-latest
+    if: needs.rollback.result == 'success'
+
+    steps:
+      - name: Send Discord notification
+        if: vars.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "content": "**:rotating_light: Production Rollback Executed**\n\n**Branch:** `${{ github.ref_name }}`\n**Reason:** Health check failed\n**Triggered by:** ${{ github.actor }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "username": "CI/CD Bot",
+              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+            }' || echo "Discord notification failed"
+
+      - name: Send Slack notification
+        if: secrets.SLACK_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": ":rotating_light: Production Rollback Executed",
+              "color": "#ff0000",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Production Rollback Executed",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Deployment health check failed. Service has been rolled back to the previous revision."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
+                    {"type": "mrkdwn", "text": "*Reason:*\nHealth check failed"},
+                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"}
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": ":warning: *Manual intervention may be required*"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Logs"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }' || echo "Slack notification failed"
+
+  notify-failure:
+    name: Notify Deployment Failure
+    needs: [build-and-push, deploy, migrate, health-check, rollback]
+    runs-on: ubuntu-latest
+    if: failure() && !needs.rollback.result
+
+    steps:
+      - name: Send Discord notification
+        if: vars.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "content": "**:x: Production Deployment Failed**\n\n**Branch:** `${{ github.ref_name }}`\n**Triggered by:** ${{ github.actor }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "username": "CI/CD Bot",
+              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+            }' || echo "Discord notification failed"
+
+      - name: Send Slack notification
+        if: secrets.SLACK_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": ":x: Production Deployment Failed",
+              "color": "#ff0000",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Production Deployment Failed",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
+                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"}
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Logs"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }' || echo "Slack notification failed"
+
+  deployment-summary:
+    name: Deployment Summary
+    needs: [deploy, health-check, rollback, notify-success, notify-rollback, notify-failure]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Create deployment summary
+        run: |
+          DEPLOYMENT_STATUS="${{ needs.health-check.outputs.status }}"
+          if [ "$DEPLOYMENT_STATUS" = "success" ] && [ "${{ needs.rollback.result }}" != "success" ]; then
+            EMOJI=":rocket:"
+            STATUS_TEXT="Successful"
+          elif [ "${{ needs.rollback.result }}" = "success" ]; then
+            EMOJI=":rotating_light:"
+            STATUS_TEXT="Rolled Back"
+          else
+            EMOJI=":x:"
+            STATUS_TEXT="Failed"
+          fi
+
+          echo "### ${EMJI} Production Deployment ${STATUS_TEXT}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Environment | Production |" >> $GITHUB_STEP_SUMMARY
-          echo "| Service URL | ${{ steps.deploy.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | revenge-x-hq-prod |" >> $GITHUB_STEP_SUMMARY
+          echo "| Region | us-central1 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Memory | 1Gi |" >> $GITHUB_STEP_SUMMARY
+          echo "| CPU | 2 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Min Instances | 2 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Max Instances | 100 |" >> $GITHUB_STEP_SUMMARY
           echo "| Domain | ${{ secrets.PROD_APP_URL }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Triggered by | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Event | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.rollback.result }}" = "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### :warning: Rollback Executed" >> $GITHUB_STEP_SUMMARY
+            echo "The deployment was rolled back to the previous revision due to health check failure." >> $GITHUB_STEP_SUMMARY
+          fi
