@@ -38,19 +38,17 @@ RUN apk add --no-cache \
     libzip \
     libzip-dev \
     oniguruma-dev \
-    icu-dev \
-    $PHPIZE_DEPS
+    icu-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure zip \
     && docker-php-ext-install pdo_pgsql zip mbstring opcache
 
-# Install Redis extension
-RUN pecl install redis \
-    && docker-php-ext-enable redis
-
-# Cleanup build dependencies
-RUN apk del .build-deps
+# Install Redis extension (needs build deps)
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del .build-deps
 
 # Install Composer
 COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
