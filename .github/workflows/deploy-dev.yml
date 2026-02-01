@@ -157,7 +157,7 @@ jobs:
         with:
           service: revenge-x-hq-dev
           region: ${{ env.REGION }}
-          image: ${{ needs.build-and-push.outputs.image }}
+          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REPO }}/revenge-x-hq:dev-release
           flags: |
             --allow-unauthenticated
             --memory=512Mi
@@ -189,7 +189,7 @@ jobs:
       - name: Deploy Cloud Run job for migrations
         run: |
           gcloud run jobs deploy revenge-x-hq-dev-migrate \
-            --image ${{ needs.build-and-push.outputs.image }} \
+            --image ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REPO }}/revenge-x-hq:dev-release \
             --region ${{ env.REGION }} \
             --command="php" \
             --args="artisan,migrate,--force" \
