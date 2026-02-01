@@ -141,56 +141,7 @@ jobs:
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
 
     steps:
-      - name: Send Discord notification
-        if: vars.DISCORD_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "content": "**:rocket: Dev Deployment Started**\n\n**Branch:** `${{ github.ref_name }}`\n**Commit:** `${{ github.sha }}`\n**Triggered by:** ${{ github.actor }}\n**Event:** ${{ github.event_name }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "username": "CI/CD Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-            }' || echo "Discord notification failed"
-
-      - name: Send Slack notification
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": ":rocket: Dev Deployment Started",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Dev Deployment Started"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Branch:*\n`${{ github.ref_name }}`"},
-                    {"type": "mrkdwn", "text": "*Commit:*\n`${{ github.sha }}`"},
-                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"},
-                    {"type": "mrkdwn", "text": "*Event:*\n${{ github.event_name }}"}
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Workflow"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }' || echo "Slack notification failed"
+      # Discord notifications removed - add back if needed
 
   deploy:
     name: Deploy to Dev
@@ -355,57 +306,7 @@ jobs:
     if: success() && !needs.rollback.result
 
     steps:
-      - name: Send Discord notification
-        if: vars.DISCORD_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "content": "**:white_check_mark: Dev Deployment Successful**\n\n**Branch:** `${{ github.ref_name }}`\n**Service URL:** ${{ secrets.DEV_APP_URL }}\n**Triggered by:** ${{ github.actor }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "username": "CI/CD Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-            }' || echo "Discord notification failed"
-
-      - name: Send Slack notification
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": ":white_check_mark: Dev Deployment Successful",
-              "color": "#36a64f",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Dev Deployment Successful",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
-                    {"type": "mrkdwn", "text": "*Service URL:*\n${{ secrets.DEV_APP_URL }}"},
-                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"}
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Workflow"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }' || echo "Slack notification failed"
+      # Discord notifications removed - add back if needed
 
   notify-failure:
     name: Notify Deployment Failure
@@ -414,56 +315,7 @@ jobs:
     if: failure() && !needs.rollback.result
 
     steps:
-      - name: Send Discord notification
-        if: vars.DISCORD_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "content": "**:x: Dev Deployment Failed**\n\n**Branch:** `${{ github.ref_name }}`\n**Triggered by:** ${{ github.actor }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "username": "CI/CD Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-            }' || echo "Discord notification failed"
-
-      - name: Send Slack notification
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": ":x: Dev Deployment Failed",
-              "color": "#ff0000",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Dev Deployment Failed",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
-                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"}
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Logs"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }' || echo "Slack notification failed"
+      # Discord notifications removed - add back if needed
 
   deployment-summary:
     name: Deployment Summary

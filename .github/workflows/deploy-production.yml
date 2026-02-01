@@ -141,65 +141,7 @@ jobs:
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
 
     steps:
-      - name: Send Discord notification
-        if: vars.DISCORD_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "content": "**:rocket: Production Deployment Started**\n\n**Branch:** `${{ github.ref_name }}`\n**Commit:** `${{ github.sha }}`\n**Triggered by:** ${{ github.actor }}\n**Event:** ${{ github.event_name }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "username": "CI/CD Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-            }' || echo "Discord notification failed"
-
-      - name: Send Slack notification
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": ":rocket: Production Deployment Started",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Production Deployment Started"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Branch:*\n`${{ github.ref_name }}`"},
-                    {"type": "mrkdwn", "text": "*Commit:*\n`${{ github.sha }}`"},
-                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"},
-                    {"type": "mrkdwn", "text": "*Event:*\n${{ github.event_name }}"}
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
-                      "type": "mrkdwn",
-                      "text": ":warning: *Production changes in progress*"
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Workflow"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }' || echo "Slack notification failed"
+      # Discord notifications removed - add back if needed
 
   deploy:
     name: Deploy to Production
@@ -376,65 +318,7 @@ jobs:
     if: success() && !needs.rollback.result
 
     steps:
-      - name: Send Discord notification
-        if: vars.DISCORD_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "content": "**:white_check_mark: Production Deployment Successful**\n\n**Branch:** `${{ github.ref_name }}`\n**Service URL:** ${{ secrets.PROD_APP_URL }}\n**Triggered by:** ${{ github.actor }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "username": "CI/CD Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-            }' || echo "Discord notification failed"
-
-      - name: Send Slack notification
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": ":white_check_mark: Production Deployment Successful",
-              "color": "#36a64f",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Production Deployment Successful",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
-                    {"type": "mrkdwn", "text": "*Service URL:*\n${{ secrets.PROD_APP_URL }}"},
-                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"}
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "Visit Production"
-                      },
-                      "url": "${{ secrets.PROD_APP_URL }}"
-                    },
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Workflow"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }' || echo "Slack notification failed"
+      # Discord notifications removed - add back if needed
 
   notify-rollback:
     name: Notify Rollback
@@ -443,73 +327,7 @@ jobs:
     if: needs.rollback.result == 'success'
 
     steps:
-      - name: Send Discord notification
-        if: vars.DISCORD_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "content": "**:rotating_light: Production Rollback Executed**\n\n**Branch:** `${{ github.ref_name }}`\n**Reason:** Health check failed\n**Triggered by:** ${{ github.actor }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "username": "CI/CD Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-            }' || echo "Discord notification failed"
-
-      - name: Send Slack notification
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": ":rotating_light: Production Rollback Executed",
-              "color": "#ff0000",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Production Rollback Executed",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Deployment health check failed. Service has been rolled back to the previous revision."
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
-                    {"type": "mrkdwn", "text": "*Reason:*\nHealth check failed"},
-                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"}
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
-                      "type": "mrkdwn",
-                      "text": ":warning: *Manual intervention may be required*"
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Logs"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }' || echo "Slack notification failed"
+      # Discord notifications removed - add back if needed
 
   notify-failure:
     name: Notify Deployment Failure
@@ -518,56 +336,7 @@ jobs:
     if: failure() && !needs.rollback.result
 
     steps:
-      - name: Send Discord notification
-        if: vars.DISCORD_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ vars.DISCORD_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "content": "**:x: Production Deployment Failed**\n\n**Branch:** `${{ github.ref_name }}`\n**Triggered by:** ${{ github.actor }}\n\n**View Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "username": "CI/CD Bot",
-              "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-            }' || echo "Discord notification failed"
-
-      - name: Send Slack notification
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": ":x: Production Deployment Failed",
-              "color": "#ff0000",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Production Deployment Failed",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
-                    {"type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}"}
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Logs"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }' || echo "Slack notification failed"
+      # Discord notifications removed - add back if needed
 
   deployment-summary:
     name: Deployment Summary
