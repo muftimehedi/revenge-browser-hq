@@ -134,18 +134,9 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
-  notify-start:
-    name: Notify Deployment Started
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
-
-    steps:
-      # Discord notifications removed - add back if needed
-
   deploy:
     name: Deploy to Production
-    needs: [build-and-push, notify-start]
+    needs: build-and-push
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -311,36 +302,9 @@ jobs:
           fi
           echo "Rollback successful and healthy!"
 
-  notify-success:
-    name: Notify Deployment Success
-    needs: [build-and-push, deploy, migrate, health-check, rollback]
-    runs-on: ubuntu-latest
-    if: success() && !needs.rollback.result
-
-    steps:
-      # Discord notifications removed - add back if needed
-
-  notify-rollback:
-    name: Notify Rollback
-    needs: [build-and-push, deploy, migrate, health-check, rollback]
-    runs-on: ubuntu-latest
-    if: needs.rollback.result == 'success'
-
-    steps:
-      # Discord notifications removed - add back if needed
-
-  notify-failure:
-    name: Notify Deployment Failure
-    needs: [build-and-push, deploy, migrate, health-check, rollback]
-    runs-on: ubuntu-latest
-    if: failure() && !needs.rollback.result
-
-    steps:
-      # Discord notifications removed - add back if needed
-
   deployment-summary:
     name: Deployment Summary
-    needs: [deploy, health-check, rollback, notify-success, notify-rollback, notify-failure]
+    needs: [deploy, health-check, rollback]
     runs-on: ubuntu-latest
     if: always()
 
