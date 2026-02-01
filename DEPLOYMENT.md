@@ -4,7 +4,6 @@
 
 This project uses GitHub Actions to automatically deploy to Google Cloud Run:
 - **dev-release branch** → `dev.revenge-x-hq.com`
-- **staging branch** → `staging.revenge-x-hq.com`
 - **main branch** → `revenge-x-hq.com`
 
 ### CI/CD Features
@@ -13,7 +12,6 @@ This project uses GitHub Actions to automatically deploy to Google Cloud Run:
 - **Docker Build**: Multi-stage builds with GitHub Actions cache
 - **Database Migrations**: Automatic migrations via Cloud Run Jobs after deployment
 - **Health Checks**: Automated health verification with rollback on failure
-- **Notifications**: Slack and Discord notifications for all deployment events
 - **Rollback**: Automatic rollback to previous revision on health check failure
 
 ---
@@ -68,12 +66,10 @@ gcloud sql instances create revenge-x-hq-prod-db \
 
 # Create databases
 gcloud sql databases create revenge_x_hq_dev --instance=revenge-x-hq-dev-db
-gcloud sql databases create revenge_x_hq_staging --instance=revenge-x-hq-staging-db
 gcloud sql databases create revenge_x_hq_prod --instance=revenge-x-hq-prod-db
 
 # Create Cloud Storage buckets
 gsutil mb -p $PROJECT_ID gs://revenge-x-hq-dev-apk
-gsutil mb -p $PROJECT_ID gs://revenge-x-hq-staging-apk
 gsutil mb -p $PROJECT_ID gs://revenge-x-hq-prod-apk
 ```
 
@@ -105,20 +101,6 @@ Add these secrets to your GitHub repository (`Settings > Secrets and variables >
 | `DEV_APP_KEY` | Laravel APP_KEY (base64) |
 | `DEV_STORAGE_BUCKET` | `revenge-x-hq-dev-apk` |
 
-### Staging Environment Secrets
-
-| Secret Name | Description |
-|------------|-------------|
-| `STAGING_APP_URL` | `https://staging.revenge-x-hq.com` |
-| `STAGING_DB_HOST` | Cloud SQL connection name |
-| `STAGING_DB_DATABASE` | `revenge_x_hq_staging` |
-| `STAGING_DB_USERNAME` | Database username |
-| `STAGING_DB_PASSWORD` | Database password |
-| `STAGING_REDIS_HOST` | *(leave empty - Redis not required for Cloud Run)* |
-| `STAGING_REDIS_PASSWORD` | *(leave empty)* |
-| `STAGING_APP_KEY` | Laravel APP_KEY (base64) |
-| `STAGING_STORAGE_BUCKET` | `revenge-x-hq-staging-apk` |
-
 ### Production Secrets
 
 | Secret Name | Description |
@@ -132,13 +114,6 @@ Add these secrets to your GitHub repository (`Settings > Secrets and variables >
 | `PROD_REDIS_PASSWORD` | *(leave empty)* |
 | `PROD_APP_KEY` | Laravel APP_KEY (base64) |
 | `PROD_STORAGE_BUCKET` | `revenge-x-hq-prod-apk` |
-
-### Notification Secrets (Optional)
-
-| Secret/Variable Name | Type | Description |
-|---------------------|------|-------------|
-| `SLACK_WEBHOOK_URL` | Secret | Slack incoming webhook URL for notifications |
-| `DISCORD_WEBHOOK_URL` | Variable | Discord webhook URL for notifications |
 
 ---
 
@@ -216,12 +191,6 @@ gcloud run domain-mappings create \
   --service=revenge-x-hq-dev \
   --region=us-central1
 
-# Staging
-gcloud run domain-mappings create \
-  --domain=staging.revenge-x-hq.com \
-  --service=revenge-x-hq-staging \
-  --region=us-central1
-
 # Production
 gcloud run domain-mappings create \
   --domain=revenge-x-hq.com \
@@ -236,7 +205,6 @@ Add these records to your DNS:
 | Type | Name | Value |
 |------|------|-------|
 | CNAME | dev | `ghs.googlehosted.com` |
-| CNAME | staging | `ghs.googlehosted.com` |
 | CNAME | @ | `ghs.googlehosted.com` |
 
 ---
@@ -253,12 +221,6 @@ The project uses **separate workflow files** for each environment:
 - URL: `https://dev.revenge-x-hq.com`
 - Resources: 512Mi memory, 1 CPU, 0-10 instances
 
-**`.github/workflows/deploy-staging.yml`**
-- Triggers: Push to `staging` or merged PR into `staging`
-- Deploys to: `revenge-x-hq-staging` Cloud Run service
-- URL: `https://staging.revenge-x-hq.com`
-- Resources: 768Mi memory, 2 CPU, 0-10 instances
-
 **`.github/workflows/deploy-production.yml`**
 - Triggers: Push to `main` or merged PR into `main`
 - Deploys to: `revenge-x-hq-prod` Cloud Run service
@@ -272,12 +234,10 @@ Each deployment workflow includes:
 1. **Tests** - Run PHPUnit tests with PostgreSQL
 2. **Build** - Build Docker image with frontend assets
 3. **Push** - Push image to Google Artifact Registry
-4. **Notify Start** - Send deployment start notification (Slack/Discord)
-5. **Deploy** - Deploy to Cloud Run
-6. **Migrate** - Run database migrations via Cloud Run Jobs
-7. **Health Check** - Verify deployment success (with retries)
-8. **Rollback** - Automatic rollback on health check failure
-9. **Notify Result** - Send success/failure/rollback notification
+4. **Deploy** - Deploy to Cloud Run
+5. **Migrate** - Run database migrations via Cloud Run Jobs
+6. **Health Check** - Verify deployment success (with retries)
+7. **Rollback** - Automatic rollback on health check failure
 
 ### Rollback Mechanism
 
@@ -285,7 +245,6 @@ If health check fails, the workflow automatically:
 - Retrieves the previous Cloud Run revision
 - Rolls back to the previous revision
 - Verifies rollback health
-- Sends rollback notification
 
 ### Database Migrations
 
@@ -356,9 +315,6 @@ After deployment, verify:
 ```bash
 # Dev
 curl https://dev.revenge-x-hq.com/api/health
-
-# Staging
-curl https://staging.revenge-x-hq.com/api/health
 
 # Production
 curl https://revenge-x-hq.com/api/health
@@ -451,7 +407,6 @@ revenge-x-hq/
 ├── .github/
 │   └── workflows/
 │       ├── deploy-dev.yml         # Dev deployment workflow
-│       ├── deploy-staging.yml     # Staging deployment workflow
 │       └── deploy-production.yml  # Production deployment workflow
 ├── deploy/
 │   ├── dev.yaml                   # Dev environment config
@@ -473,12 +428,12 @@ revenge-x-hq/
 
 ## Cost Estimates (Monthly)
 
-| Service | Dev | Staging | Production |
-|---------|-----|---------|------------|
-| Cloud Run | ~$0 | ~$5-20 | ~$20-100 |
-| Cloud SQL | ~$10 | ~$15 | ~$50-200 |
-| Cloud Storage | ~$0.10 | ~$0.10 | ~$1-5 |
-| Memorystore (optional) | - | - | ~$30-100 |
+| Service | Dev | Production |
+|---------|-----|------------|
+| Cloud Run | ~$0 | ~$20-100 |
+| Cloud SQL | ~$10 | ~$50-200 |
+| Cloud Storage | ~$0.10 | ~$1-5 |
+| Memorystore (optional) | - | ~$30-100 |
 
 ---
 
@@ -499,13 +454,8 @@ revenge-x-hq/
    - Creates PR: `feature/new-feature` → `dev-release`
    - On merge: Auto-deploys to `dev.revenge-x-hq.com`
 
-4. **Promote to Staging**
-   - Creates PR: `dev-release` → `staging`
-   - On merge: Auto-deploys to `staging.revenge-x-hq.com`
-   - Test in production-like environment
-
-5. **Promote to Production**
-   - Creates PR: `staging` → `main`
+4. **Promote to Production**
+   - Creates PR: `dev-release` → `main`
    - On merge: Auto-deploys to `revenge-x-hq.com`
 
 ---
@@ -518,7 +468,5 @@ revenge-x-hq/
 4. ✅ Create service account and add to GitHub Secrets
 5. ✅ Add all required secrets (see GITHUB_SECRETS.md)
 6. ✅ Push to `dev-release` to test deployment
-7. ✅ Create and push to `staging` branch for staging environment
-8. ✅ Configure domain mappings
-9. ✅ Push to `main` for production deployment
-10. ✅ (Optional) Add Slack/Discord webhooks for notifications
+7. ✅ Configure domain mappings
+8. ✅ Push to `main` for production deployment

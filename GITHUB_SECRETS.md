@@ -24,14 +24,13 @@ https://github.com/muftimehedi/revenge-x-hq/settings/secrets/actions
 
 ## Required Secrets Overview
 
-**Total Secrets Required: 30**
+**Total Secrets Required: 21**
 
 ### Priority Order (Add in This Order)
 
 1. **Core Secrets (3)** - Required for CI/CD to work
 2. **Dev Environment Secrets (9)** - Required for dev deployment
-3. **Staging Environment Secrets (9)** - Required for staging deployment
-4. **Production Secrets (9)** - Required for production deployment
+3. **Production Secrets (9)** - Required for production deployment
 
 ---
 
@@ -177,115 +176,57 @@ Value: revenge-x-hq-dev-apk
 
 ---
 
-### Part 3: Staging Environment Secrets (9 required)
+### Part 3: Production Environment Secrets (9 required)
 
-#### Secret 13: STAGING_APP_URL
-```
-Name: STAGING_APP_URL
-Value: https://staging.revenge-x-hq.com
-```
-
-#### Secret 14: STAGING_DB_HOST
-```
-Name: STAGING_DB_HOST
-Value: revenge-x-hq:us-central1:revenge-x-hq-staging-db
-```
-
-#### Secret 15: STAGING_DB_DATABASE
-```
-Name: STAGING_DB_DATABASE
-Value: revenge_x_hq_staging
-```
-
-#### Secret 16: STAGING_DB_USERNAME
-```
-Name: STAGING_DB_USERNAME
-Value: postgres
-```
-
-#### Secret 17: STAGING_DB_PASSWORD
-```
-Name: STAGING_DB_PASSWORD
-Value: RevengeXHQ_Staging_2026
-```
-
-#### Secret 18: STAGING_REDIS_HOST
-```
-Name: STAGING_REDIS_HOST
-Value: [Leave empty - not required for Cloud Run]
-```
-
-#### Secret 19: STAGING_REDIS_PASSWORD
-```
-Name: STAGING_REDIS_PASSWORD
-Value: [Leave empty - not required for Cloud Run]
-```
-
-#### Secret 20: STAGING_APP_KEY
-```
-Name: STAGING_APP_KEY
-Value: base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
-```
-
-#### Secret 21: STAGING_STORAGE_BUCKET
-```
-Name: STAGING_STORAGE_BUCKET
-Value: revenge-x-hq-staging-apk
-```
-
----
-
-### Part 4: Production Environment Secrets (9 required)
-
-#### Secret 22: PROD_APP_URL
+#### Secret 13: PROD_APP_URL
 ```
 Name: PROD_APP_URL
 Value: https://revenge-x-hq.com
 ```
 
-#### Secret 23: PROD_DB_HOST
+#### Secret 14: PROD_DB_HOST
 ```
 Name: PROD_DB_HOST
 Value: revenge-x-hq:us-central1:revenge-x-hq-prod-db
 ```
 
-#### Secret 24: PROD_DB_DATABASE
+#### Secret 15: PROD_DB_DATABASE
 ```
 Name: PROD_DB_DATABASE
 Value: revenge_x_hq_prod
 ```
 
-#### Secret 25: PROD_DB_USERNAME
+#### Secret 16: PROD_DB_USERNAME
 ```
 Name: PROD_DB_USERNAME
 Value: postgres
 ```
 
-#### Secret 26: PROD_DB_PASSWORD
+#### Secret 17: PROD_DB_PASSWORD
 ```
 Name: PROD_DB_PASSWORD
 Value: RevengeXHQ_Prod_2026_Secure!
 ```
 
-#### Secret 27: PROD_REDIS_HOST
+#### Secret 18: PROD_REDIS_HOST
 ```
 Name: PROD_REDIS_HOST
 Value: [Leave empty - not required for Cloud Run]
 ```
 
-#### Secret 28: PROD_REDIS_PASSWORD
+#### Secret 19: PROD_REDIS_PASSWORD
 ```
 Name: PROD_REDIS_PASSWORD
 Value: [Leave empty - not required for Cloud Run]
 ```
 
-#### Secret 29: PROD_APP_KEY
+#### Secret 20: PROD_APP_KEY
 ```
 Name: PROD_APP_KEY
 Value: base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
 ```
 
-#### Secret 30: PROD_STORAGE_BUCKET
+#### Secret 21: PROD_STORAGE_BUCKET
 ```
 Name: PROD_STORAGE_BUCKET
 Value: revenge-x-hq-prod-apk
@@ -299,7 +240,7 @@ After adding all secrets, verify they appear in your secrets list:
 
 **Go to:** https://github.com/muftimehedi/revenge-x-hq/settings/secrets/actions
 
-You should see all 30 secrets listed:
+You should see all 21 secrets listed:
 
 ### Core Secrets (3)
 - ✓ GCP_PROJECT_ID
@@ -316,17 +257,6 @@ You should see all 30 secrets listed:
 - ✓ DEV_REDIS_PASSWORD
 - ✓ DEV_APP_KEY
 - ✓ DEV_STORAGE_BUCKET
-
-### Staging Environment (9)
-- ✓ STAGING_APP_URL
-- ✓ STAGING_DB_HOST
-- ✓ STAGING_DB_DATABASE
-- ✓ STAGING_DB_USERNAME
-- ✓ STAGING_DB_PASSWORD
-- ✓ STAGING_REDIS_HOST
-- ✓ STAGING_REDIS_PASSWORD
-- ✓ STAGING_APP_KEY
-- ✓ STAGING_STORAGE_BUCKET
 
 ### Production Environment (9)
 - ✓ PROD_APP_URL
@@ -381,19 +311,6 @@ DEV_REDIS_HOST = [leave empty - Redis not required]
 DEV_REDIS_PASSWORD = [leave empty]
 DEV_APP_KEY = base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
 DEV_STORAGE_BUCKET = revenge-x-hq-dev-apk
-
-=====================================
-STAGING ENVIRONMENT
-=====================================
-STAGING_APP_URL = https://staging.revenge-x-hq.com
-STAGING_DB_HOST = revenge-x-hq:us-central1:revenge-x-hq-staging-db
-STAGING_DB_DATABASE = revenge_x_hq_staging
-STAGING_DB_USERNAME = postgres
-STAGING_DB_PASSWORD = RevengeXHQ_Staging_2026
-STAGING_REDIS_HOST = [leave empty - Redis not required]
-STAGING_REDIS_PASSWORD = [leave empty]
-STAGING_APP_KEY = base64:ZivrvUvri0Zh7lp5RrCTwXKmiTmtZ3elzc5qv9lGVu4=
-STAGING_STORAGE_BUCKET = revenge-x-hq-staging-apk
 
 =====================================
 PRODUCTION ENVIRONMENT
@@ -482,7 +399,6 @@ GCP_ARTIFACT_REPO = [your-repo-name]
 
 ```
 DEV_DB_HOST = [your-project]:us-central1:[your-dev-db-instance]
-STAGING_DB_HOST = [your-project]:us-central1:[your-staging-db-instance]
 PROD_DB_HOST = [your-project]:us-central1:[your-prod-db-instance]
 ```
 
@@ -512,53 +428,10 @@ PROD_DB_HOST = [your-project]:us-central1:[your-prod-db-instance]
 | `DEV_DB_*` | Database connection for dev |
 | `DEV_APP_KEY` | Laravel encryption key for dev |
 | `DEV_STORAGE_BUCKET` | Cloud Storage bucket for dev APKs |
-| `STAGING_APP_URL` | Base URL for staging environment |
-| `STAGING_DB_*` | Database connection for staging |
-| `STAGING_APP_KEY` | Laravel encryption key for staging |
-| `STAGING_STORAGE_BUCKET` | Cloud Storage bucket for staging APKs |
 | `PROD_APP_URL` | Base URL for production |
 | `PROD_DB_*` | Database connection for production |
 | `PROD_APP_KEY` | Laravel encryption key for production |
 | `PROD_STORAGE_BUCKET` | Cloud Storage bucket for production APKs |
-
----
-
-## Optional: Notification Secrets
-
-For deployment notifications to Slack and Discord, add these:
-
-### Slack Notifications (Secret)
-
-```
-Name: SLACK_WEBHOOK_URL
-Value: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
-```
-
-**How to get Slack webhook:**
-1. Go to https://api.slack.com/messaging/webhooks
-2. Create a new app or use existing
-3. Enable Incoming Webhooks
-4. Create webhook and copy URL
-5. Add as GitHub Secret
-
-### Discord Notifications (Variable)
-
-```
-Name: DISCORD_WEBHOOK_URL
-Value: https://discord.com/api/webhooks/YOUR/WEBHOOK/URL
-```
-
-**How to get Discord webhook:**
-1. Go to your Discord server settings
-2. Integrations → Webhooks → Create Webhook
-3. Copy webhook URL
-4. Add as GitHub Variable (not Secret)
-
-**What notifications you'll receive:**
-- Deployment started
-- Deployment succeeded
-- Deployment failed
-- Rollback executed
 
 ---
 

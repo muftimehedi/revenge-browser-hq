@@ -28,7 +28,6 @@
 | Environment | Branch | Domain |
 |------------|--------|--------|
 | **Development** | `dev-release` | `dev.revenge-x-hq.com` |
-| **Staging** | `staging` | `staging.revenge-x-hq.com` |
 | **Production** | `main` | `revenge-x-hq.com` |
 
 ---
@@ -177,7 +176,6 @@ If you prefer manual setup:
    **Cloud Storage**
    ```bash
    gsutil mb -p revenge-x-hq -l us-central1 gs://revenge-x-hq-dev-apk
-   gsutil mb -p revenge-x-hq -l us-central1 gs://revenge-x-hq-staging-apk
    gsutil mb -p revenge-x-hq -l us-central1 gs://revenge-x-hq-prod-apk
    ```
 
@@ -237,12 +235,6 @@ The project uses **separate workflow files** for each environment:
 - URL: `https://dev.revenge-x-hq.com`
 - Resources: 512Mi memory, 1 CPU, 0-10 instances
 
-**`.github/workflows/deploy-staging.yml`**
-- Triggers: Push to `staging` or merged PR into `staging`
-- Deploys to: `revenge-x-hq-staging` Cloud Run service
-- URL: `https://staging.revenge-x-hq.com`
-- Resources: 768Mi memory, 2 CPU, 0-10 instances
-
 **`.github/workflows/deploy-production.yml`**
 - Triggers: Push to `main` or merged PR into `main`
 - Deploys to: `revenge-x-hq-prod` Cloud Run service
@@ -251,7 +243,6 @@ The project uses **separate workflow files** for each environment:
 
 ```
 Push to dev-release → Tests → Build → Deploy → Migrate → Health Check
-Push to staging     → Tests → Build → Deploy → Migrate → Health Check
 Push to main        → Tests → Build → Deploy → Migrate → Health Check
 ```
 
@@ -262,12 +253,10 @@ Each deployment workflow includes:
 1. **Tests** - Run PHPUnit tests with PostgreSQL service container
 2. **Build** - Build Docker image with frontend assets
 3. **Push** - Push image to Google Artifact Registry
-4. **Notify Start** - Send deployment start notification (Slack/Discord)
-5. **Deploy** - Deploy to Cloud Run
-6. **Migrate** - Run database migrations via Cloud Run Jobs
-7. **Health Check** - Verify deployment success (with retries)
-8. **Rollback** - Automatic rollback to previous revision on failure
-9. **Notify Result** - Send success/failure/rollback notification
+4. **Deploy** - Deploy to Cloud Run
+5. **Migrate** - Run database migrations via Cloud Run Jobs
+6. **Health Check** - Verify deployment success (with retries)
+7. **Rollback** - Automatic rollback to previous revision on failure
 
 ### Rollback Mechanism
 
@@ -275,7 +264,6 @@ If health check fails after deployment:
 - Automatically retrieves the previous Cloud Run revision
 - Rolls back to the previous revision
 - Verifies rollback health
-- Sends rollback notification to Slack/Discord
 
 ### Database Migrations
 
@@ -284,14 +272,6 @@ After each successful deployment:
 - Executes `php artisan migrate --force`
 - Cleans up the job after completion
 - Runs before health check to ensure schema is updated
-
-### Notifications (Optional)
-
-Configure Slack or Discord webhooks for:
-- Deployment started
-- Deployment succeeded
-- Deployment failed
-- Rollback executed
 
 **Add to GitHub Secrets/Variables:**
 - `SLACK_WEBHOOK_URL` (Secret)
@@ -323,20 +303,6 @@ Add these at `https://github.com/YOUR_USERNAME/revenge-x-hq/settings/secrets/act
 | `DEV_APP_KEY` | `base64:...` (generate with `php artisan key:generate`) |
 | `DEV_STORAGE_BUCKET` | `revenge-x-hq-dev-apk` |
 
-#### Staging Environment Secrets
-
-| Secret Name | Value |
-|------------|-------|
-| `STAGING_APP_URL` | `https://staging.revenge-x-hq.com` |
-| `STAGING_DB_HOST` | `revenge-x-hq:us-central1:revenge-x-hq-staging-db` |
-| `STAGING_DB_DATABASE` | `revenge_x_hq_staging` |
-| `STAGING_DB_USERNAME` | `postgres` |
-| `STAGING_DB_PASSWORD` | *(your database password)* |
-| `STAGING_REDIS_HOST` | *(leave empty - Redis not required for Cloud Run)* |
-| `STAGING_REDIS_PASSWORD` | *(leave empty)* |
-| `STAGING_APP_KEY` | `base64:...` (generate with `php artisan key:generate`) |
-| `STAGING_STORAGE_BUCKET` | `revenge-x-hq-staging-apk` |
-
 #### Production Secrets
 
 | Secret Name | Value |
@@ -360,18 +326,10 @@ Add these at `https://github.com/YOUR_USERNAME/revenge-x-hq/settings/secrets/act
    ```
    → Auto-deploys to `dev.revenge-x-hq.com`
 
-2. **Push to `staging`**
-   ```bash
-   git checkout staging
-   git merge dev-release
-   git push origin staging
-   ```
-   → Auto-deploys to `staging.revenge-x-hq.com`
-
-3. **Push to `main`**
+2. **Push to `main`**
    ```bash
    git checkout main
-   git merge staging
+   git merge dev-release
    git push origin main
    ```
    → Auto-deploys to `revenge-x-hq.com`
@@ -393,9 +351,6 @@ After deployment, verify:
 ```bash
 # Dev
 curl https://dev.revenge-x-hq.com/api/health
-
-# Staging
-curl https://staging.revenge-x-hq.com/api/health
 
 # Production
 curl https://revenge-x-hq.com/api/health
@@ -685,7 +640,6 @@ revenge-x-hq/
 ├── .github/
 │   └── workflows/
 │       ├── deploy-dev.yml       # Dev CI/CD workflow
-│       ├── deploy-staging.yml   # Staging CI/CD workflow
 │       └── deploy-production.yml # Production CI/CD workflow
 ├── .gcloudignore
 ├── .env.example
@@ -767,18 +721,10 @@ gcloud sql backups list --instance=revenge-x-hq-prod-db
    # Test at dev.revenge-x-hq.com
    ```
 
-3. **Testing on Staging**
-   ```bash
-   git checkout staging
-   git merge dev-release
-   git push origin staging
-   # Test at staging.revenge-x-hq.com
-   ```
-
-4. **Deploy to Production**
+3. **Deploy to Production**
    ```bash
    git checkout main
-   git merge staging
+   git merge dev-release
    git push origin main
    # Deployed to revenge-x-hq.com
    ```
