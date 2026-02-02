@@ -85,8 +85,8 @@ RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
     && echo "QUEUE_CONNECTION=sync" >> /var/www/html/.env \
     && echo "VIEW_COMPILED_PATH=/var/www/html/storage/framework/views" >> /var/www/html/.env
 
-# Install composer dependencies (no optimization - will happen at runtime)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install composer dependencies (skip scripts since env isn't fully configured yet)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Copy nginx configuration
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
@@ -98,8 +98,12 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 # Copy PHP configuration
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
 
+# Copy and setup entrypoint script
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose port
 EXPOSE 8080
 
-# Start supervisord (manages nginx + php-fpm)
-CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+# Run entrypoint script (initializes Laravel then starts supervisord)
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
