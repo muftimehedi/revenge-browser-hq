@@ -89,7 +89,7 @@ RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Copy nginx configuration
-COPY docker/nginx.conf.template /etc/nginx/http.d/default.conf.template
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/fastcgi_params /etc/nginx/fastcgi_params
 COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 
