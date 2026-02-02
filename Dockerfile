@@ -75,7 +75,7 @@ RUN mkdir -p /var/log/supervisor /var/run/supervisord \
 RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
     && echo "APP_ENV=production" >> /var/www/html/.env \
     && echo "APP_DEBUG=false" >> /var/www/html/.env \
-    && echo "APP_KEY=base64:$(php -r 'echo urlencode(base64_encode(random_bytes(32)));')" >> /var/www/html/.env \
+    && echo "APP_KEY=base64:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789012345=" >> /var/www/html/.env \
     && echo "CACHE_DRIVER=array" >> /var/www/html/.env \
     && echo "SESSION_DRIVER=array" >> /var/www/html/.env \
     && echo "QUEUE_CONNECTION=sync" >> /var/www/html/.env \
