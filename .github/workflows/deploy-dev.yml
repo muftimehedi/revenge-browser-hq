@@ -268,14 +268,20 @@ jobs:
             --format="value(name)" \
             --sort-by=~createTime \
             --limit=2 | tail -n 1)
+          if [ -z "$PREVIOUS_REVISION" ]; then
+            echo "No previous revision found for rollback"
+            exit 1
+          fi
           echo "revision=$PREVIOUS_REVISION" >> $GITHUB_OUTPUT
           echo "Rolling back to revision: $PREVIOUS_REVISION"
 
       - name: Rollback to previous revision
         run: |
+          # Tag the previous revision and set 100% traffic to it
           gcloud run services update revenge-x-hq-dev \
             --region ${{ env.REGION }} \
-            --revision=${{ steps.previous-revision.outputs.revision }} \
+            --to-revisions=${{ steps.previous-revision.outputs.revision }}=100 \
+            --no-traffic-tags \
             --quiet || echo "Rollback failed, please manually revert"
 
       - name: Wait for rollback to complete
@@ -311,7 +317,7 @@ jobs:
             STATUS_TEXT="Failed"
           fi
 
-          echo "### ${EMJI} Dev Deployment ${STATUS_TEXT}" >> $GITHUB_STEP_SUMMARY
+          echo "### ${EMOJI} Dev Deployment ${STATUS_TEXT}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
