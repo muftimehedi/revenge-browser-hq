@@ -80,11 +80,14 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction \
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 
+# Copy supervisor configuration
+COPY docker/supervisord.conf /etc/supervisord.conf
+
 # Copy PHP configuration
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Expose port
 EXPOSE 8080
 
-# Start supervisor
-CMD ["php-fpm", "-F", "-R"]
+# Start supervisord (manages nginx + php-fpm)
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
