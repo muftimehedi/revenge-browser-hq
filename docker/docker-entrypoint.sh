@@ -1,18 +1,12 @@
 #!/bin/sh
-set -e
+# Entrypoint for Cloud Run - ensure supervisord starts properly
 
-# Ensure storage directories are writable
+# Ensure storage and cache directories exist with proper permissions
 mkdir -p /var/www/html/storage/framework/cache
 mkdir -p /var/www/html/storage/framework/sessions
 mkdir -p /var/www/html/storage/framework/views
 mkdir -p /var/www/html/storage/logs
-chmod -R 775 /var/www/html/storage
-chmod -R 775 /var/www/html/bootstrap/cache
+mkdir -p /var/www/html/bootstrap/cache
 
-# Clear any cached config that might have stale values
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
-
-# Start supervisord
+# Start supervisord which manages nginx and php-fpm
 exec supervisord -c /etc/supervisord.conf
