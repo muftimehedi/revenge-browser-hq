@@ -241,7 +241,7 @@ jobs:
         run: |
           set +e
           for i in {1..5}; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PROD_APP_URL }}/api/health)
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PROD_APP_URL }}/up)
             echo "Attempt $i: HTTP Status $RESPONSE"
             if [ "$RESPONSE" = "200" ]; then
               echo "status=success" >> $GITHUB_OUTPUT
@@ -300,7 +300,7 @@ jobs:
 
       - name: Verify rollback health
         run: |
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PROD_APP_URL }}/api/health)
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PROD_APP_URL }}/up)
           if [ "$RESPONSE" != "200" ]; then
             echo "Rollback health check failed with status: $RESPONSE"
             echo "MANUAL INTERVENTION REQUIRED"

@@ -44,12 +44,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: "8.4"
           extensions: pdo, pdo_pgsql, redis, mbstring, zip, curl
           coverage: none
 
@@ -230,7 +230,7 @@ jobs:
         run: |
           set +e
           for i in {1..5}; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.DEV_APP_URL }}/api/health)
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.DEV_APP_URL }}/up)
             echo "Attempt $i: HTTP Status $RESPONSE"
             if [ "$RESPONSE" = "200" ]; then
               echo "status=success" >> $GITHUB_OUTPUT
@@ -289,7 +289,7 @@ jobs:
 
       - name: Verify rollback health
         run: |
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.DEV_APP_URL }}/api/health)
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.DEV_APP_URL }}/up)
           if [ "$RESPONSE" != "200" ]; then
             echo "Rollback health check failed with status: $RESPONSE"
             exit 1
