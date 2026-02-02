@@ -66,7 +66,8 @@ COPY . .
 COPY --from=frontend /app/public/build ./public/build
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html \
+RUN mkdir -p /var/log/supervisor /var/run/supervisord \
+    && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
