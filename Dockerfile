@@ -69,7 +69,8 @@ COPY --from=frontend /app/public/build ./public/build
 RUN mkdir -p /var/log/supervisor /var/run/supervisord \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 755 /var/www/html/bootstrap/cache \
+    && chmod -R 777 /var/www/html/storage/framework/cache
 
 # Create minimal .env for bootstrap (APP_KEY comes from Cloud Run env vars)
 RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
@@ -81,11 +82,8 @@ RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
     && echo "QUEUE_CONNECTION=sync" >> /var/www/html/.env \
     && echo "VIEW_COMPILED_PATH=/dev/null" >> /var/www/html/.env
 
-# Optimize Laravel for production
-RUN composer install --no-dev --optimize-autoloader --no-interaction \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Install composer dependencies (no optimization - will happen at runtime)
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy nginx configuration
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
