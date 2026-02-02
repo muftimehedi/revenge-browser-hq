@@ -241,13 +241,20 @@ jobs:
         run: |
           set +e
           for i in {1..5}; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.PROD_APP_URL }}/up)
-            echo "Attempt $i: HTTP Status $RESPONSE"
-            if [ "$RESPONSE" = "200" ]; then
+            echo "Attempt $i..."
+            # Capture body to file, write status code to stdout
+            RESPONSE_CODE=$(curl -sL -o /tmp/health_report.txt -w "%{http_code}" ${{ secrets.PROD_APP_URL }}/up)
+            echo "HTTP Status: $RESPONSE_CODE"
+
+            if [ "$RESPONSE_CODE" = "200" ]; then
               echo "status=success" >> $GITHUB_OUTPUT
               echo "status=success" >> $GITHUB_ENV
               echo "Health check passed!"
               exit 0
+            else
+              echo "Response Body:"
+              cat /tmp/health_report.txt
+              echo "----------------------------------------"
             fi
             sleep 10
           done
