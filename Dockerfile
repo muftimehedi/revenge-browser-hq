@@ -67,10 +67,13 @@ COPY --from=frontend /app/public/build ./public/build
 
 # Set permissions
 RUN mkdir -p /var/log/supervisor /var/run/supervisord \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache \
-    && chmod -R 777 /var/www/html/storage/framework/cache
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 # Create minimal .env for bootstrap (APP_KEY comes from Cloud Run env vars)
 RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
@@ -80,7 +83,7 @@ RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
     && echo "CACHE_DRIVER=array" >> /var/www/html/.env \
     && echo "SESSION_DRIVER=array" >> /var/www/html/.env \
     && echo "QUEUE_CONNECTION=sync" >> /var/www/html/.env \
-    && echo "VIEW_COMPILED_PATH=/dev/null" >> /var/www/html/.env
+    && echo "VIEW_COMPILED_PATH=/var/www/html/storage/framework/views" >> /var/www/html/.env
 
 # Install composer dependencies (no optimization - will happen at runtime)
 RUN composer install --no-dev --optimize-autoloader --no-interaction

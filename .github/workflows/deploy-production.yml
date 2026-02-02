@@ -234,7 +234,7 @@ jobs:
 
     steps:
       - name: Wait for service to be ready
-        run: sleep 15
+        run: sleep 30
 
       - name: Check health endpoint
         id: health
@@ -249,7 +249,7 @@ jobs:
               echo "Health check passed!"
               exit 0
             fi
-            sleep 5
+            sleep 10
           done
           echo "status=failed" >> $GITHUB_OUTPUT
           echo "status=failed" >> $GITHUB_ENV
