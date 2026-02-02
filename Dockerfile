@@ -90,6 +90,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 
 # Copy nginx configuration
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/fastcgi_params /etc/nginx/fastcgi_params
 COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Copy supervisor configuration
