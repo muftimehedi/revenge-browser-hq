@@ -75,11 +75,12 @@ RUN mkdir -p /var/log/supervisor /var/run/supervisord \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Create minimal .env for bootstrap (APP_KEY comes from Cloud Run env vars)
+# Create minimal .env for bootstrap (critical values come from Cloud Run env vars)
+# Note: We do NOT set APP_KEY here - it must come from Cloud Run environment
+# variables to avoid encryption/decryption failures
 RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
     && echo "APP_ENV=production" >> /var/www/html/.env \
     && echo "APP_DEBUG=false" >> /var/www/html/.env \
-    && echo "APP_KEY=base64:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789012345=" >> /var/www/html/.env \
     && echo "CACHE_DRIVER=array" >> /var/www/html/.env \
     && echo "SESSION_DRIVER=array" >> /var/www/html/.env \
     && echo "QUEUE_CONNECTION=sync" >> /var/www/html/.env \
