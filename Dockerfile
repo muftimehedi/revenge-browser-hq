@@ -71,6 +71,16 @@ RUN mkdir -p /var/log/supervisor /var/run/supervisord \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
+# Create minimal .env for bootstrap (APP_KEY comes from Cloud Run env vars)
+RUN echo "APP_NAME=\"Revenge X HQ\"" > /var/www/html/.env \
+    && echo "APP_ENV=production" >> /var/www/html/.env \
+    && echo "APP_DEBUG=false" >> /var/www/html/.env \
+    && echo "APP_KEY=" >> /var/www/html/.env \
+    && echo "CACHE_DRIVER=array" >> /var/www/html/.env \
+    && echo "SESSION_DRIVER=array" >> /var/www/html/.env \
+    && echo "QUEUE_CONNECTION=sync" >> /var/www/html/.env \
+    && echo "VIEW_COMPILED_PATH=/dev/null" >> /var/www/html/.env
+
 # Optimize Laravel for production
 RUN composer install --no-dev --optimize-autoloader --no-interaction \
     && php artisan config:cache \
